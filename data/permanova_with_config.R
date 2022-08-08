@@ -3,9 +3,13 @@ source("get_dist.R")
 ordu1 = ordinate(site1, "PCoA", distance = "unifrac", weighted=TRUE)
 ordu2 = ordinate(site2, "PCoA", distance = "unifrac", weighted=TRUE)
 
-pseudo_F <- function(mat, trt){
-  d <- as.matrix(dist(mat))
-  N <- nrow(mat)
+pseudo_F <- function(mat=NULL, trt, d = NULL){
+  if(is.null(d)){
+    d <- as.matrix(dist(mat))
+  } else {
+    d <- as.matrix(d)
+  }
+  N <- nrow(d)
   a <- length(unique(trt))
   n <- N/a
   
