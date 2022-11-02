@@ -1,3 +1,5 @@
+# dependency on get_dist.R
+
 mds_obj <- function(D, z){
   N = dim(D)[1]
   S = dim(z)[2]
