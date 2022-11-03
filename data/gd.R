@@ -1,4 +1,5 @@
-# dependency on get_dist.R
+# variables dependency on get_dist.R, data.R, smds.R
+source("permanova_with_config.R")
 
 mds_obj <- function(D, z){
   N = dim(D)[1]
@@ -12,12 +13,14 @@ mds_obj <- function(D, z){
   return(sum((D - z_dist)^2)/2)
 }
 
+# MDS term
 gd_mds <- function(nit = 1000, eta = 1e-04, conv_lim = 1e-05,
                    D, S = 2, z0){
   # fixed step size (eta)
   N = dim(D)[1]
   z_cur <- z0 #matrix, N * S
   for(t in 1:nit){
+    print(paste('iteration',t))
     for(i in 1:N){
       # f
       d_f <- rep(0, S)
@@ -40,6 +43,7 @@ gd_mds <- function(nit = 1000, eta = 1e-04, conv_lim = 1e-05,
   return(list(z = z_up, obj0 = obj0, obj_up = obj_up))
 }
 
+# F statistic term, L1 norm
 gd_class <- function(nit = 1000, eta = 1e-04, z0, conv_lim = 1e-05,
                      D, S = 2, y){
   # fixed step size (eta)
@@ -80,6 +84,7 @@ gd_class <- function(nit = 1000, eta = 1e-04, z0, conv_lim = 1e-05,
               F0 = F0, Finit = Finit, Fup = Fz_cur))
 }
 
+# MDS + F terms
 gd_cmds <- function(nit = 1000, eta = 1e-04, conv_lim = 1e-05, lambda = 500,
                     z0, D, S = 2, y){
   # fixed step size (eta)
