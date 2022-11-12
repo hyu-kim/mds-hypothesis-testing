@@ -93,7 +93,7 @@ plot(ord_plot)
 # Based on Bray–Curtis dissimilarity or Unifrac distance metric
 for (j in c("1","2")){
   physeq_temp = subset_samples(ps, Site==j) # subset
-  bray = phyloseq::distance(physeq_temp, method = "unifrac")
+  bray = phyloseq::distance(physeq_temp, method = "wunifrac")
   sampledf = data.frame(sample_data(physeq_temp))
   
   ## 1) Adonis test (compare centroids between each group)
