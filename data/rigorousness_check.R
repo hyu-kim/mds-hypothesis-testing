@@ -19,7 +19,7 @@ get_random_f_stats <- function(distmat, ordu, n_iter = 1000){
     y <- rep(1,36)
     y[random_index] = 2  # crate random labels for ps dataset
     random_labels[iter,] <- y
-    random_f[iter,1] = pseudo_F(mat = distmat, trt = y)$pseudoF
+    random_f[iter,1] = pseudo_F(d = distmat, trt = y)$pseudoF
     random_f[iter,2] = pseudo_F(mat = ordu$vectors[,1:2], trt = y)$pseudoF
   }
   # compute and fill in p values

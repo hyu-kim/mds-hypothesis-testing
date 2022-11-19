@@ -8,7 +8,7 @@ source('rigorousness_check.R')
 
 # function
 pick_extreme <- function(random_f, labels){
-  ind_significant <- (random_f[,3]>2)|(random_f[,4]>2)
+  ind_significant <- (random_f[,3]>1.3)|(random_f[,4]>1.3)
   random_f_filtered <- random_f[ind_significant,]
   p_ratio <- random_f_filtered[,3]/random_f_filtered[,4]
   index_extremes <- which(p_ratio==max(p_ratio) | p_ratio==min(p_ratio))
