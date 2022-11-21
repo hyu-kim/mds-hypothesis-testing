@@ -106,7 +106,9 @@ gd_cmds <- function(nit = 1000, eta = 1e-04, conv_crit = 5e-03, lambda = 0.05,
     obj_total_prev <- obj_total
     print(paste('iteration', t, 
                 '  total', sprintf(obj_total, fmt = '%#.3f'), 
-                '  Fz', sprintf(Fz_cur, fmt = '%#.3f')))
+                '  Fz', sprintf(Fz_cur, fmt = '%#.3f'),
+                '  F0', sprintf(F0, fmt = '%#.3f')
+                ))
     for(i in 1:N){
       d_f <- rep(0, S)
       tmp11 <- tmp22 <- rep(0, S)
