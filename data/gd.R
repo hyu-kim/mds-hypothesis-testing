@@ -1,96 +1,82 @@
 # variables dependency on get_dist.R, data.R
 source("permanova_with_config.R")
 
-# MDS objective
-mds_obj <- function(D, z){
-  N = dim(D)[1]
-  S = dim(z)[2]
+# Distance between vector
+dist_matrix <- function(z){
+  N = dim(z)[1]
   z_dist = matrix(0, nrow = N, ncol = N)
   for(i in 1:N){
     for(j in 1:N){
       z_dist[i,j] <- sqrt(sum((z[i,] - z[j,])^2))
     }
   }
+  return(z_dist)
+}
+
+
+# Difference between vectors
+dist_arr_3d <- function(z){
+  N = dim(z)[1]
+  S = dim(z)[2]
+  z_dist_3d = array(0, dim=c(N,N,S))
+  for(i in 1:N){
+    for(j in 1:N){
+      for(s in 1:S){
+        z_dist_3d[i,j,s] <- z[i,s] - z[j,s]
+      }
+    }
+  }
+  return(z_dist_3d)
+}
+
+
+# Indicator matrix of labels
+ind_matrix <- function(y){
+  N = length(y)
+  mat = matrix(0, nrow = N, ncol = N)
+  for(i in 1:N){
+    for(j in 1:N){
+      mat[i,j] <- as.numeric(y[i]==y[j])
+    }
+  }
+  return(mat)
+}
+
+
+# MDS objective
+mds_obj <- function(D, z){
+  z_dist <- dist_matrix(z)
   return(sum((D - z_dist)^2)/2)
 }
 
 
-# -----
-# MDS term
-gd_mds <- function(nit = 1000, eta = 1e-04, conv_lim = 1e-05,
-                   D, S = 2, z0){
-  # fixed step size (eta)
-  N = dim(D)[1]
-  z_cur <- z0 #matrix, N * S
-  for(t in 1:nit){
-    print(paste('iteration',t))
-    for(i in 1:N){
-      # f
-      d_f <- rep(0, S)
-      for(j in setdiff(1:N, i)){
-        d_f <- d_f + 2 * (1 - D[i,j]/sqrt(sum((z_cur[i,] - z_cur[j,])^2))) * 
-          (z_cur[i,] - z_cur[j,])
-      }
-      z_cur[i,] <- z_cur[i,] - eta * d_f
-    }
-    z_up <- z_cur
-    # if(sqrt(sum((z_up - z_cur)^2)) < conv_lim){
-    #   print("Converged")
-    #   break
-    #### convergence at every i?
-    # }
-  }
-  
-  obj0 = mds_obj(D = D, z = z0)
-  obj_up = mds_obj(D = D, z = z_up)
-  return(list(z = z_up, obj0 = obj0, obj_up = obj_up))
+# confirmatory objective term with labels
+conf_obj <- function(y, z, D){
+  N <- length(y)
+  z_distmat <- dist_matrix(z)
+  y_indmat <- ind_matrix(y)
+  phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
+  res <- (N-2) * sum((1 - (1+phi)*y_indmat) * z_distmat)^2
+  return(res)
 }
 
 
-# -----
-# F statistic term, L1 norm
-gd_class <- function(nit = 1000, eta = 1e-04, z0, conv_lim = 1e-05,
-                     D, S = 2, y){
-  # fixed step size (eta)
-  N = nrow(z0)
-  a <- length(table(y))
+# gradient of MDS objective
+grad_mds_obj <- function(D, z){
+  N <- dim(z)[1]
+  S <- dim(z)[2]
+  res <- matrix(0, nrow = N, ncol = S)
+  z_dist <- dist_matrix(z)
+  z_dist2 <- z_dist + diag(N) # to avoid singularity
+  term1 <- 1 - D/z_dist2 # N by N
+  term1 <- array(rep(term1, S), dim=c(N,N,S)) # braodcast to size (N,N,S)
   
-  z_cur <- z0 #matrix, N * S
-  Fz_cur <- pseudo_F(mat = z_cur, trt = y)$pseudoF
-  F0 <- pseudo_F(d = D, trt = y)$pseudoF
-  Finit <- Fz_cur
-  for(t in 1:nit){
-    for(i in 1:N){
-      # f
-      # d_g <- rep(0, S)
-      tmp11 <- tmp22 <- rep(0, S)
-      tmp12 <- tmp21 <- 0
-      for(j in 1:N){
-        tmp11 <- tmp11 + z_cur[i,] - z_cur[j,]
-        tmp22 <- tmp22 + ifelse(y[i] == y[j], z_cur[i,] - z_cur[j,], 0)
-        for(i_ in 1:N){
-          tmp21 <- tmp21 + sum((z_cur[i_,] - z_cur[j,])^2)
-          tmp12 <- tmp12 + ifelse(y[i_] == y[j], 
-                                  sum((z_cur[i_,] - z_cur[j,])^2), 0)
-        }
-      }
-      d_g <- 4 * (N-a)/a * sign(Fz_cur - F0) * (tmp11 * tmp12 - tmp21 * tmp22)
-      z_cur[i,] <- z_cur[i,] - eta * d_g
-      Fz_cur <- pseudo_F(mat = z_cur, trt = y)$pseudoF
-    }
-    z_up <- z_cur
-    # if(sqrt(sum((z_up - z_cur)^2)) < conv_lim){
-    #   print("Converged")
-    #   break
-    #### convergence at every i?
-    # }
-  }
-  return(list(z = z_up, obj0 = abs(F0 - Finit), obj_up = abs(F0 - Fz_cur),
-              F0 = F0, Finit = Finit, Fup = Fz_cur))
+  # for(i in 1:N){
+  #   res[i,] <- 2*sum()
+  # }
 }
 
 
-# -----
 # MDS + F terms
 gd_cmds <- function(nit = 1000, eta = 1e-04, conv_crit = 5e-03, lambda = 0.05,
                     z0, D, S = 2, y){
