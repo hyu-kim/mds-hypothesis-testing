@@ -56,10 +56,12 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
   z_temp <- z_up <- z0
   for(t in 1:nit){
     obj_conf_up <- conf_obj(y, z_up, D)
-    obj_up <- obj_conf_up$val + lambda*mds_obj(D, z_up)
-    print(paste('iteration', t, 
+    obj_mds_up <- mds_obj(D, z_up)
+    obj_up <- lambda*obj_conf_up$val + obj_mds_up
+    print(paste('epoch', t, 
                 '  total', sprintf(obj_up, fmt = '%#.3f'), 
-                '  conf_term', sprintf(obj_conf_up$val, fmt = '%#.3f')
+                '  mds', sprintf(obj_mds_up, fmt = '%#.3f'), 
+                '  conf', sprintf(obj_conf_up$val, fmt = '%#.3f')
     ))
     
     delta <- obj_conf_up$sign  # N
@@ -68,13 +70,22 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
     coeff[is.nan(coeff)] <- 0
     for(i in 1:N){
       z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
-      z_temp[i,] <- (1+lambda*delta[i])*apply(z_up[y!=y[i],], 2, sum) +
-        (1-lambda*phi*delta[i])*apply(z_up[y==y[i],], 2, sum) +
-        sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*")
-      z_temp[i,] <- z_temp[i,] / (2 + lambda * (1-phi)*delta[i])
+      z_temp[i,] <- (1+lambda*delta[i]) * (apply(z_up[y!=y[i],], 2, sum)-z_up[i]) +
+        (1-lambda*phi*delta[i]) * (apply(z_up[y==y[i],], 2, sum)-z_up[i]) +
+        apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
+      z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi)*lambda*delta[i])
     }
     z_up <- z_temp
+    # print(z_up)
   }
-  return(list(z = z_up, obj0 = obj0, obj_up = obj_up,
-              F0 = F0, Finit = Finit, Fup = Fz_cur))
+  
+  obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
+  obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
+  return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f))
 }
+
+
+# plot
+par(mfrow = c(1,2))
+plot(obmm$z, col = y1)
+plot(obj_smacofSym$conf, col = y1)
