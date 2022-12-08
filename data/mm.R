@@ -42,7 +42,7 @@ conf_obj <- function(y, z, D){
   phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
   val <- (1-(1+phi)*y_indmat) * z_distmat^2
   res <- 0.5 * abs(sum(val))
-  return(list(val = res, sign = sign(rowSums(val))))
+  return(list(val = res, sign = sign(sum(val))))
 }
 
 
@@ -68,16 +68,17 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
                 '  F0', sprintf(F0, fmt = '%#.2f')
     ))
     
-    delta <- obj_conf_up$sign  # N
+    # delta <- obj_conf_up$sign  # scalar
     z_distmat <- get_dist_mat(z_up)  # (N,N)
     coeff <- D/z_distmat  # final term in the update
     coeff[is.nan(coeff)] <- 0
     for(i in 1:N){
+      delta <- conf_obj(y, z_up, D)$sign
       z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
-      z_temp[i,] <- (1+lambda*delta[i]) * (apply(z_up[y!=y[i],], 2, sum)-z_up[i,]) +
-        (1-lambda*phi*delta[i]) * (apply(z_up[y==y[i],], 2, sum)-z_up[i,]) +
+      z_temp[i,] <- (1+lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)-z_up[i,]) +
+        (1-lambda*phi*delta) * (apply(z_up[y==y[i],], 2, sum)-z_up[i,]) +
         apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
-      z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi)*lambda*delta[i])
+      z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi)*lambda*delta)
       z_up[i,] <- z_temp[i,]
     }
     # z_up <- z_temp
@@ -96,10 +97,10 @@ zmds1 <- ordu1$vectors[,1:2]
 zmds2 <- ordu2$vectors[,1:2]
 y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
-obmm3 <- mm_cmds(nit=200, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,1])
+obmm3t <- mm_cmds(nit=100, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,1])
 
 
 # plot
 par(mfrow = c(1,2))
 plot(obmm0$z, col = y2s[,1])
-plot(obmm3$z, col = y2s[,1])
+plot(obmm3t$z, col = y2s[,1])
