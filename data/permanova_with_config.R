@@ -27,5 +27,25 @@ pseudo_F <- function(mat=NULL, trt, d = NULL){
               pseudoF = (SSA * (N-a))/(SSW * (a-1))))
 }
 
+
+get_p <- function(mat=NULL, d=NULL, trt, n_iter=999){
+  # initialize
+  f_permuted = matrix(0, nrow=n_iter, ncol=1)  # pseudo-F only
+  # iterate to get pseudo F
+  for (iter in 1:n_iter){
+    ind_rand <- sample(1:36, 18, replace=F)
+    y_rand <- rep(1,36)
+    y_rand[ind_rand] = 2
+    f_permuted[iter,1] = pseudo_F(mat=mat, d = d, trt = y_rand)$pseudoF
+  }
+  # compute p value
+  f_sorted = sort(f_permuted[,1], decreasing = TRUE)
+  f_val = pseudo_F(mat=mat, d = d, trt = trt)$pseudoF
+  p_val = which(f_val > f_sorted)[1]
+  p_val <- (p_val-1)/(n_iter+1)
+  
+  return(list(f_all = f_sorted, f = f_val, p = p_val))
+}
+
 pseudo_F(ordu1$vectors[,1:2], site1@sam_data@.Data[[1]])
 pseudo_F(ordu2$vectors[,1:2], site2@sam_data@.Data[[1]])

@@ -2,6 +2,21 @@
 source("permanova_with_config.R")
 
 
+# local regression on one-on-one paired by p value
+pair_by_pval <- function(D, z, y){
+  f0_sorted <- get_p(d=D, trt=y)$f_all
+  fz_sorted <- get_p(mat=z, trt=y)$f_all
+  N <- length(f0_sorted)
+  mat_pair <- matrix(0, nrow=N, ncol=2)
+  mat_pair[,1] <- f0_sorted
+  mat_pair[,2] <- fz_sorted
+  df_pair <- data.frame(data=mat_pair)
+  colnames(df_pair) <- c('F0','Fz')
+  loess_f <- loess(Fz ~ F0, data=df_pair, span=0.10)
+  return(list(pair=mat_pair, model=loess_f))
+}
+
+
 # Distance between vector
 get_dist_mat <- function(z){
   N = dim(z)[1]
