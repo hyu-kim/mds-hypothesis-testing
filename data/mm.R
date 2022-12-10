@@ -2,21 +2,6 @@
 source("permanova_with_config.R")
 
 
-# local regression on one-on-one paired by p value
-pair_by_pval <- function(D, z, y){
-  f0_sorted <- get_p(d=D, trt=y)$f_all
-  fz_sorted <- get_p(mat=z, trt=y)$f_all
-  N <- length(f0_sorted)
-  mat_pair <- matrix(0, nrow=N, ncol=2)
-  mat_pair[,1] <- f0_sorted
-  mat_pair[,2] <- fz_sorted
-  df_pair <- data.frame(data=mat_pair)
-  colnames(df_pair) <- c('F0','Fz')
-  loess_f <- loess(Fz ~ F0, data=df_pair, span=0.10)
-  return(list(pair=mat_pair, model=loess_f))
-}
-
-
 # Distance between vector
 get_dist_mat <- function(z){
   N = dim(z)[1]
@@ -43,6 +28,34 @@ get_ind_mat <- function(y){
 }
 
 
+# compute phi (ratio)
+get_phi <- function(mat=NULL, d=NULL, trt){
+  if(is.null(d)){
+    d <- as.matrix(dist(mat))
+  } else {
+    d <- as.matrix(d)
+  }
+  y_indmat <- get_ind_mat(trt)
+  phi <- sum((1-y_indmat) * d*d) / sum(y_indmat * d*d)
+  return(list(ratio = phi))
+}
+
+
+# local regression on one-on-one paired by p value
+pair_by_rank <- function(D, z, y, fun){
+  f0_sorted <- get_p(d=D, trt=y, fun=fun)$ratio_all
+  fz_sorted <- get_p(mat=z, trt=y, fun=fun)$ratio_all
+  N <- length(f0_sorted)
+  mat_pair <- matrix(0, nrow=N, ncol=2)
+  mat_pair[,1] <- f0_sorted
+  mat_pair[,2] <- fz_sorted
+  df_pair <- data.frame(data=mat_pair)
+  colnames(df_pair) <- c('F0','Fz')
+  loess_f <- loess(Fz ~ F0, data=df_pair, span=0.10)
+  return(list(pair=mat_pair, model=loess_f))
+}
+
+
 # MDS objective
 mds_obj <- function(D, z){
   z_distmat <- get_dist_mat(z)
@@ -55,7 +68,9 @@ conf_obj <- function(y, z, D){
   z_distmat <- get_dist_mat(z)
   y_indmat <- get_ind_mat(y)
   phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
-  val <- (1-(1+phi)*y_indmat) * z_distmat^2
+  f_loess <- pair_by_rank(D=D, z=z, y=y, fun=get_phi)$model
+  phi_up <- predict(f_loess, phi)  # perform loess for accurate F mapping
+  val <- (1-(1+phi_up)*y_indmat) * z_distmat^2
   res <- 0.5 * abs(sum(val))
   return(list(val = res, sign = sign(sum(val))))
 }
@@ -69,12 +84,12 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
   phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
   delta <- conf_obj(y, z0, D)$sign
   z_temp <- z_up <- z0
-  F0 <- pseudo_F(d = D, trt = y)$pseudoF
+  F0 <- pseudo_F(d = D, trt = y)$ratio
   for(t in 1:nit){
     obj_conf_up <- conf_obj(y, z_up, D)
     obj_mds_up <- mds_obj(D, z_up)
     obj_up <- lambda*obj_conf_up$val + obj_mds_up
-    Fz_up <- pseudo_F(mat = z_up, trt = y)$pseudoF
+    Fz_up <- pseudo_F(mat = z_up, trt = y)$ratio
     print(paste('epoch', t, 
                 '  total', sprintf(obj_up, fmt = '%#.3f'), 
                 '  mds', sprintf(obj_mds_up, fmt = '%#.3f'), 
@@ -83,17 +98,21 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
                 '  F0', sprintf(F0, fmt = '%#.2f')
     ))
     
-    # delta <- obj_conf_up$sign  # scalar
-    z_distmat <- get_dist_mat(z_up)  # (N,N)
-    coeff <- D/z_distmat  # final term in the update
-    coeff[is.nan(coeff)] <- 0
     for(i in 1:N){
+      f_loess <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$model
+      phi_up <- predict(f_loess, phi)  # perform loess for accurate F mapping
+      
       delta <- conf_obj(y, z_up, D)$sign
+      
+      z_distmat <- as.matrix(dist(z_up))  # (N,N)
+      coeff <- D/z_distmat  # final term in the update
+      coeff[is.nan(coeff)] <- 0
       z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
+      
       z_temp[i,] <- (1+lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)-z_up[i,]) +
-        (1-lambda*phi*delta) * (apply(z_up[y==y[i],], 2, sum)-z_up[i,]) +
+        (1-lambda*phi_up*delta) * (apply(z_up[y==y[i],], 2, sum)-z_up[i,]) +
         apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
-      z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi)*lambda*delta)
+      z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi_up)*lambda*delta)
       z_up[i,] <- z_temp[i,]
     }
     # z_up <- z_temp
@@ -102,7 +121,7 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
   
   obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
   obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
-  Fz_up <- pseudo_F(mat = z_up, trt = y)$pseudoF
+  Fz_up <- pseudo_F(mat = z_up, trt = y)$ratio
   return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f, F_z = Fz_up, F_0 = F0))
 }
 
@@ -112,10 +131,10 @@ zmds1 <- ordu1$vectors[,1:2]
 zmds2 <- ordu2$vectors[,1:2]
 y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
-obmm3t <- mm_cmds(nit=100, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,1])
+obmmx <- mm_cmds(nit=15, lambda=0.3, z0=zmds1, D=distmat1, y=y1s[,2])
 
 
 # plot
 par(mfrow = c(1,2))
 plot(obmm0$z, col = y2s[,1])
-plot(obmm3t$z, col = y2s[,1])
+plot(obmm1.1$z, col = y2s[,1])
