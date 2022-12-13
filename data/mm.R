@@ -140,8 +140,8 @@ obmmx <- mm_cmds(nit=15, lambda=0.3, z0=zmds1, D=distmat1, y=y1s[,2])
 
 # plot
 par(mfrow = c(1,2))
-ggplot(data.frame(cbind(obmm0$z, (y1s[,1]))), aes(x=Axis.1, y=Axis.2, color=V3)) + 
-  geom_point() + 
-  stat_ellipse(level = 0.9)
+ggplot(data.frame(cbind(obmm1.1$z, (y1s[,1]))), aes(x=Axis.1, y=Axis.2)) + 
+  geom_point(aes(color=V3)) + 
+  stat_ellipse(level = 0.8, aes(color=V3, group=V3))
 plot(obmm0$z, col = y2s[,1])
 plot(obmm1.1$z, col = y2s[,1])
