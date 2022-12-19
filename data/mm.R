@@ -133,6 +133,8 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
 # run
 zmds1 <- ordu1$vectors[,1:2]
 zmds2 <- ordu2$vectors[,1:2]
+y1s <- read.table('result/labels_site1.txt', sep=',', header=TRUE)
+y2s <- read.table('result/labels_site2.txt', sep=',', header=TRUE)
 y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
 obmmx <- mm_cmds(nit=15, lambda=0.3, z0=zmds1, D=distmat1, y=y1s[,2])
@@ -140,7 +142,7 @@ obmmx <- mm_cmds(nit=15, lambda=0.3, z0=zmds1, D=distmat1, y=y1s[,2])
 
 # plot
 par(mfrow = c(1,2))
-ggplot(data.frame(cbind(obmm1.1$z, (y1s[,1]))), aes(x=Axis.1, y=Axis.2)) + 
+ggplot(data.frame(cbind(obmm2$z, (y2s[,1]))), aes(x=Axis.1, y=Axis.2)) + 
   geom_point(aes(color=V3)) + 
   stat_ellipse(level = 0.8, aes(color=V3, group=V3))
 plot(obmm0$z, col = y2s[,1])
