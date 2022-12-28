@@ -137,7 +137,7 @@ y1s <- read.table('result/labels_site1.txt', sep=',', header=TRUE)
 y2s <- read.table('result/labels_site2.txt', sep=',', header=TRUE)
 y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
-obmmx <- mm_cmds(nit=15, lambda=0.3, z0=zmds1, D=distmat1, y=y1s[,2])
+obmm_x <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,2])  # just an example. replace x with any number you want
 
 
 # plot
