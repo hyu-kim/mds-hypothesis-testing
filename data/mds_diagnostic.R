@@ -1,7 +1,7 @@
 # variables dependency on get_dist.R, mm.R
 source("mm.R")
 library(superMDS)
-smds_x <- TrainSuperMDS(d = distmat2, y = y2s[,1], alpha = 0.231)
+smds_x <- TrainSuperMDS(d = distmat2, y = y2s[,1], alpha = 0.3/(1+0.3))
 
 #### Shepard Plot
 # Some definitions switches x and y axis
