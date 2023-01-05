@@ -4,13 +4,14 @@ source("permanova_with_config.R")
 
 # Distance between vector
 get_dist_mat <- function(z){
-  N = dim(z)[1]
-  z_dist = matrix(0, nrow = N, ncol = N)
-  for(i in 1:N){
-    for(j in 1:N){
-      z_dist[i,j] <- sqrt(sum((z[i,] - z[j,])^2))
-    }
-  }
+  # N = dim(z)[1]
+  # z_dist = matrix(0, nrow = N, ncol = N)
+  # for(i in 1:N){
+  #   for(j in 1:N){
+  #     z_dist[i,j] <- sqrt(sum((z[i,] - z[j,])^2))
+  #   }
+  # }
+  z_dist <- as.matrix(dist(z))
   return(z_dist)
 }
 
@@ -51,7 +52,8 @@ pair_by_rank <- function(D, z, y, fun){
   mat_pair[,2] <- fz_sorted
   df_pair <- data.frame(data=mat_pair)
   colnames(df_pair) <- c('F0','Fz')
-  loess_f <- loess(Fz ~ F0, data=df_pair, span=0.10)
+  loess_f <- loess(Fz ~ F0, data=df_pair, span=0.10,
+                   control=loess.control(surface="direct"))
   return(list(pair=mat_pair, model=loess_f))
 }
 
@@ -118,6 +120,9 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
         apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
       z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi_up)*lambda*delta)
       z_up[i,] <- z_temp[i,]
+      if(i %in% seq(from=10, to = N, by=10)){
+        print(paste(i, "of", N, "observation updated")) ##to check progress
+      }
     }
     # z_up <- z_temp
     # print(z_up)

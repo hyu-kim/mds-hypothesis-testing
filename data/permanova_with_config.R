@@ -32,9 +32,11 @@ get_p <- function(mat=NULL, d=NULL, trt, n_iter=999, fun=pseudo_F){
   # initialize
   f_permuted = matrix(0, nrow=n_iter, ncol=1)  # pseudo-F only
   # iterate to get pseudo F
+  N <- length(trt)
+  tbl <- table(trt)
   for (iter in 1:n_iter){
-    ind_rand <- sample(1:36, 18, replace=F)
-    y_rand <- rep(1,36)
+    ind_rand <- sample(1:N, tbl[2], replace=F)
+    y_rand <- rep(1,N)
     y_rand[ind_rand] = 2
     f_permuted[iter,1] = fun(mat=mat, d = d, trt = y_rand)$ratio
   }
@@ -44,7 +46,7 @@ get_p <- function(mat=NULL, d=NULL, trt, n_iter=999, fun=pseudo_F){
   p_val = which(f_val > f_sorted)[1]
   p_val <- (p_val-1)/(n_iter+1)
   
-  return(list(ratio_all = f_sorted, raio = f_val, p = p_val))
+  return(list(ratio_all = f_sorted, ratio = f_val, p = p_val))
 }
 
 pseudo_F(ordu1$vectors[,1:2], site1@sam_data@.Data[[1]])
