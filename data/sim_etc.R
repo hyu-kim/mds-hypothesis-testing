@@ -1,6 +1,7 @@
 #####TTD
 #0. Do with real data labels
 #### Site 1
+set.seed(100)
 res1 <- 
   list(
     lambda0.0 = mm_cmds(nit=15, lambda=0.0, z0=zmds1, D=distmat1, y=y1),
@@ -16,16 +17,16 @@ get_p(trt = y1, d = distmat1)$p # p = 0
 
 ## Pure MDS
 get_p(trt = y1, mat = zmds1)$ratio # pseudo-F = 11.984
-get_p(trt = y1, mat = zmds1)$p # p = 0
+get_p(trt = y1, mat = zmds1)$p # p = 0.001
 
 ## Proposed MDS
-res1$lambda0.3$F_z # pseudo-F = 12.36596
-get_p(trt = y1, mat = res1$lambda0.3$z)$p # p = 0
+res1$lambda0.3$F_z # pseudo-F = 10.70738
+get_p(trt = y1, mat = res1$lambda0.3$z)$p # p = 0.001
 
 ## Configurations
 pdf("data/result/config_site1.pdf",
-    width = 9, height = 5)
-par(mfrow = c(1,2))
+    width = 9, height = 9)
+par(mfrow = c(2,2))
 plot(zmds1, main = "Pure MDS", col = y1)
 text(x = (min(zmds1[,1])+max(zmds1[,1]))/2, y = max(zmds1[,2]),
      paste("F_z = ", round(get_p(trt = y1, mat = zmds1)$ratio, 3)))
@@ -35,6 +36,18 @@ mtext(paste(
   "Stress1 = ", 
   round(sqrt(sum((dist1 - dist(zmds1))^2) /
                sum((dist(zmds1))^2)), 4)), side=3)
+
+plot(res1$lambda0.1$z, main = "lambda = 0.1", col = y1)
+text(x = (min(res1$lambda0.1$z[,1])+max(res1$lambda0.1$z[,1]))/2, 
+     y = max(res1$lambda0.1$z[,2]),
+     paste("F_z = ", round(res1$lambda0.1$F_z, 3)))
+text(x = (min(res1$lambda0.1$z[,1])+max(res1$lambda0.1$z[,1]))/2, 
+     y = max(res1$lambda0.1$z[,2]) - 0.008,
+     paste("p = ", get_p(trt = y1, mat = res1$lambda0.1$z)$p))
+mtext(paste(
+  "Stress1 = ", 
+  round(sqrt(sum((dist1 - dist(res1$lambda0.1$z))^2) /
+               sum((dist(res1$lambda0.1$z))^2)), 4)), side=3)
 
 plot(res1$lambda0.3$z, main = "lambda = 0.3", col = y1)
 text(x = (min(res1$lambda0.3$z[,1])+max(res1$lambda0.3$z[,1]))/2, 
@@ -47,12 +60,24 @@ mtext(paste(
   "Stress1 = ", 
   round(sqrt(sum((dist1 - dist(res1$lambda0.3$z))^2) /
                sum((dist(res1$lambda0.3$z))^2)), 4)), side=3)
+
+plot(res1$lambda0.5$z, main = "lambda = 0.5", col = y1)
+text(x = (min(res1$lambda0.5$z[,1])+max(res1$lambda0.5$z[,1]))/2, 
+     y = max(res1$lambda0.5$z[,2]),
+     paste("F_z = ", round(res1$lambda0.5$F_z, 3)))
+text(x = (min(res1$lambda0.5$z[,1])+max(res1$lambda0.5$z[,1]))/2, 
+     y = max(res1$lambda0.5$z[,2]) - 0.008,
+     paste("p = ", get_p(trt = y1, mat = res1$lambda0.5$z)$p))
+mtext(paste(
+  "Stress1 = ", 
+  round(sqrt(sum((dist1 - dist(res1$lambda0.5$z))^2) /
+               sum((dist(res1$lambda0.5$z))^2)), 4)), side=3)
 dev.off()
 
 ## Shepard
 pdf("data/result/shepard_site1.pdf",
-    width = 9, height = 5)
-par(mfrow = c(1, 2))
+    width = 9, height = 9)
+par(mfrow = c(2, 2))
 plot(dist1, dist(zmds1),
      xlab = "original distance", ylab = "configuration distance",
      main = "Pure MDS")
@@ -60,6 +85,13 @@ mtext(paste(
   "Stress1 = ", 
   round(sqrt(sum((dist1 - dist(zmds1))^2) /
                sum((dist(zmds1))^2)), 4)), side=3)
+plot(dist1, dist(res1$lambda0.1$z),
+     xlab = "original distance", ylab = "configuration distance",
+     main = expression(paste(lambda, "= 0.1")))
+mtext(paste(
+  "Stress1 = ", 
+  round(sqrt(sum((dist1 - dist(res1$lambda0.1$z))^2) /
+               sum((dist(res1$lambda0.1$z))^2)), 4)), side=3)
 plot(dist1, dist(res1$lambda0.3$z),
      xlab = "original distance", ylab = "configuration distance",
      main = expression(paste(lambda, "= 0.3")))
@@ -67,6 +99,13 @@ mtext(paste(
   "Stress1 = ", 
   round(sqrt(sum((dist1 - dist(res1$lambda0.3$z))^2) /
                sum((dist(res1$lambda0.3$z))^2)), 4)), side=3)
+plot(dist1, dist(res1$lambda0.5$z),
+     xlab = "original distance", ylab = "configuration distance",
+     main = expression(paste(lambda, "= 0.5")))
+mtext(paste(
+  "Stress1 = ", 
+  round(sqrt(sum((dist1 - dist(res1$lambda0.5$z))^2) /
+               sum((dist(res1$lambda0.5$z))^2)), 4)), side=3)
 dev.off()
 
 
@@ -82,20 +121,20 @@ res2 <-
 
 ## Desired result (PERMANOVA)
 get_p(trt = y2, d = distmat2)$ratio # pseudo-F = 1.925012
-get_p(trt = y2, d = distmat2)$p # p = 0.076
+get_p(trt = y2, d = distmat2)$p # p = 0.093
 
 ## Pure MDS
 get_p(trt = y2, mat = zmds2)$ratio # pseudo-F = 0.733862
-get_p(trt = y2, mat = zmds2)$p # p = 0.47
+get_p(trt = y2, mat = zmds2)$p # p = 0.464
 
 ## Proposed MDS
-res2$lambda0.3$F_z # pseudo-F = 2.403895
-get_p(trt = y2, mat = res2$lambda0.3$z)$p # p = 0.108
+res2$lambda0.3$F_z # pseudo-F = 2.374346
+get_p(trt = y2, mat = res2$lambda0.3$z)$p # p = 0.094
 
 ## Configurations
 pdf("data/result/config_site2.pdf",
-    width = 9, height = 5)
-par(mfrow = c(1,2))
+    width = 9, height = 9)
+par(mfrow = c(2,2))
 plot(zmds2, main = "Pure MDS", col = y2)
 text(x = (min(zmds2[,1])+max(zmds2[,1]))/2, y = max(zmds2[,2]),
      paste("F_z = ", round(get_p(trt = y2, mat = zmds2)$ratio, 3)))
@@ -105,6 +144,18 @@ mtext(paste(
   "Stress1 = ", 
   round(sqrt(sum((dist2 - dist(zmds2))^2) /
                sum((dist(zmds2))^2)), 4)), side=3)
+
+plot(res2$lambda0.1$z, main = "lambda = 0.1", col = y2)
+text(x = (min(res2$lambda0.1$z[,1])+max(res2$lambda0.1$z[,1]))/2, 
+     y = max(res2$lambda0.1$z[,2]),
+     paste("F_z = ", round(res2$lambda0.1$F_z, 3)))
+text(x = (min(res2$lambda0.1$z[,1])+max(res2$lambda0.1$z[,1]))/2, 
+     y = max(res2$lambda0.1$z[,2]) - 0.008,
+     paste("p = ", get_p(trt = y2, mat = res2$lambda0.1$z)$p))
+mtext(paste(
+  "Stress1 = ", 
+  round(sqrt(sum((dist2 - dist(res2$lambda0.1$z))^2) /
+               sum((dist(res2$lambda0.1$z))^2)), 4)), side=3)
 
 plot(res2$lambda0.3$z, main = "lambda = 0.3", col = y2)
 text(x = (min(res2$lambda0.3$z[,1])+max(res2$lambda0.3$z[,1]))/2, 
@@ -117,12 +168,24 @@ mtext(paste(
   "Stress1 = ", 
   round(sqrt(sum((dist2 - dist(res2$lambda0.3$z))^2) /
                sum((dist(res2$lambda0.3$z))^2)), 4)), side=3)
+
+plot(res2$lambda0.5$z, main = "lambda = 0.5", col = y2)
+text(x = (min(res2$lambda0.5$z[,1])+max(res2$lambda0.5$z[,1]))/2, 
+     y = max(res2$lambda0.5$z[,2]),
+     paste("F_z = ", round(res2$lambda0.5$F_z, 3)))
+text(x = (min(res2$lambda0.5$z[,1])+max(res2$lambda0.5$z[,1]))/2, 
+     y = max(res2$lambda0.5$z[,2]) - 0.008,
+     paste("p = ", get_p(trt = y2, mat = res2$lambda0.5$z)$p))
+mtext(paste(
+  "Stress1 = ", 
+  round(sqrt(sum((dist2 - dist(res2$lambda0.5$z))^2) /
+               sum((dist(res2$lambda0.5$z))^2)), 4)), side=3)
 dev.off()
 
 ## Shepard
 pdf("data/result/shepard_site2.pdf",
-    width = 9, height = 5)
-par(mfrow = c(1, 2))
+    width = 9, height = 9)
+par(mfrow = c(2, 2))
 plot(dist2, dist(zmds2),
      xlab = "original distance", ylab = "configuration distance",
      main = "Pure MDS")
@@ -130,6 +193,13 @@ mtext(paste(
   "Stress1 = ", 
   round(sqrt(sum((dist2 - dist(zmds2))^2) /
                sum((dist(zmds2))^2)), 4)), side=3)
+plot(dist2, dist(res2$lambda0.1$z),
+     xlab = "original distance", ylab = "configuration distance",
+     main = expression(paste(lambda, "= 0.1")))
+mtext(paste(
+  "Stress1 = ", 
+  round(sqrt(sum((dist2 - dist(res2$lambda0.1$z))^2) /
+               sum((dist(res2$lambda0.1$z))^2)), 4)), side=3)
 plot(dist2, dist(res2$lambda0.3$z),
      xlab = "original distance", ylab = "configuration distance",
      main = expression(paste(lambda, "= 0.3")))
@@ -137,6 +207,13 @@ mtext(paste(
   "Stress1 = ", 
   round(sqrt(sum((dist2 - dist(res2$lambda0.3$z))^2) /
                sum((dist(res2$lambda0.3$z))^2)), 4)), side=3)
+plot(dist2, dist(res2$lambda0.5$z),
+     xlab = "original distance", ylab = "configuration distance",
+     main = expression(paste(lambda, "= 0.5")))
+mtext(paste(
+  "Stress1 = ", 
+  round(sqrt(sum((dist2 - dist(res2$lambda0.5$z))^2) /
+               sum((dist(res2$lambda0.5$z))^2)), 4)), side=3)
 dev.off()
 
 #1. Check no symm-matrix issues (summing twice, etc)

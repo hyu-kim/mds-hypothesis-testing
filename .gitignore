@@ -1,2 +1,5 @@
 mds-hypothesis-testing.Rproj
 .Rproj.user
+.DS_Store
+.RData
+.Rhistory
