@@ -236,18 +236,16 @@ plot_ly(sim_data$data, x = ~X1, y = ~X2, z = ~X3,
 sim_data$distmat <- as.matrix(dist(sim_data$data[, 1:3]))
 sim_data$dist <- dist(sim_data$data[, 1:3])
 
-pdf("data/result/sim_data_2d.pdf",
-    width = 9, height = 7)
-par(mfrow = c(2, 2), mar = c(4,4,2,1))
-plot(sim_data$data$X1, sim_data$data$X2, col = sim_data$data$Y,
-     xlab = "X1", ylab = "X2")
-plot.new()
-plot(sim_data$data$X1, sim_data$data$X3, col = sim_data$data$Y,
-     xlab = "X1", ylab = "X3")
-plot(sim_data$data$X2, sim_data$data$X3, col = sim_data$data$Y,
-     xlab = "X2", ylab = "X3")
+setEPS()
+postscript("result/sim_data_2d.eps", width = 8, height = 3)
+par(mfrow = c(1, 3))
+plot(sim_data$data$X1, sim_data$data$X2,
+     xlab = "X1", ylab = "X2", pch = c(1,16)[as.numeric(sim_data$data$Y)])
+plot(sim_data$data$X1, sim_data$data$X3,
+     xlab = "X1", ylab = "X3", pch = c(1,16)[as.numeric(sim_data$data$Y)])
+plot(sim_data$data$X2, sim_data$data$X3,
+     xlab = "X2", ylab = "X3", pch = c(1,16)[as.numeric(sim_data$data$Y)])
 dev.off()
-
 
 
 ## Desired result (PERMANOVA)
@@ -302,63 +300,71 @@ names(sim_res$proposed) <- c("lambda0.3", "lambda0.5", "lambda0.7")
 
 
 
-## Configurations
-pdf("data/result/config_sim.pdf",
-    width = 9, height = 9)
-par(mfrow = c(2,2), mar = c(2,2,3,1))
-plot(sim_res$mds, main = "Pure MDS", col = sim_data$data$Y)
-text(x = (min(sim_res$mds[,1])+
-            max(sim_res$mds[,1]))/2 -3, 
+## Configurations in EPS
+setEPS()
+postscript("result/config_sim.eps", width = 8, height = 3)
+par(mfrow = c(1, 3))
+plot(sim_res$mds, pch = c(1,16)[as.numeric(sim_data$data$Y)])
+plot(sim_res$proposed$lambda0.3$z, 
+     pch = c(1,16)[as.numeric(sim_data$data$Y)])
+
+plot(sim_res$proposed$lambda0.5$z, 
+     pch = c(1,16)[as.numeric(sim_data$data$Y)])
+dev.off()
+
+
+## Configurations in pdf
+plot(sim_res$proposed$lambda0.3$z, main = "Pure MDS", col = sim_data$data$Y)
+text(x = (min(sim_res$mds[,1]) + max(sim_res$mds[,1]))/2 -3,
      y = max(sim_res$mds[,2]),
      paste("F_z = ", round(sim_res$mds_perm$ratio, 3)))
-text(x = (min(sim_res$mds[,1])+
-            max(sim_res$mds[,1]))/2 -3, 
+text(x = (min(sim_res$mds[,1]) + max(sim_res$mds[,1]))/2 -3,
      y = max(sim_res$mds[,2]) - 0.5,
      paste("p = ", sim_res$mds_perm$p))
 mtext(paste(
-  "Stress1 = ", 
+  "Stress1 = ",
   round(sqrt(sum((sim_data$dist - dist(sim_res$mds))^2) /
                sum((dist(sim_res$mds))^2)), 4)), side=3)
 
 plot(sim_res$proposed$lambda0.3$z, main = "lambda = 0.3", col = sim_data$data$Y)
 text(x = (min(sim_res$proposed$lambda0.3$z[,1])+
-            max(sim_res$proposed$lambda0.3$z[,1]))/2 -3, 
+            max(sim_res$proposed$lambda0.3$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.3$z[,2]),
-     paste("F_z = ", round(sim_res$proposed_perm[1], 3)))
+     paste("F_z = ", round(sim_res$proposed_perm[5], 3)))
 text(x = (min(sim_res$proposed$lambda0.3$z[,1])+
-            max(sim_res$proposed$lambda0.3$z[,1]))/2 -3, 
+            max(sim_res$proposed$lambda0.3$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.3$z[,2]) - 0.5,
-     paste("p = ", sim_res$proposed_perm[2]))
+     paste("p = ", sim_res$proposed_perm[6]))
 mtext(paste(
-  "Stress1 = ", 
+  "Stress1 = ",
   round(sqrt(sum((sim_data$dist - dist(sim_res$proposed$lambda0.3$z))^2) /
                sum((dist(sim_res$proposed$lambda0.3$z))^2)), 4)), side=3)
 
 plot(sim_res$proposed$lambda0.5$z, main = "lambda = 0.5", col = sim_data$data$Y)
 text(x = (min(sim_res$proposed$lambda0.5$z[,1])+
-            max(sim_res$proposed$lambda0.5$z[,1]))/2 -3, 
+            max(sim_res$proposed$lambda0.5$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.5$z[,2]),
-     paste("F_z = ", round(sim_res$proposed_perm[3], 3)))
+     paste("F_z = ", round(sim_res$proposed_perm[5], 3)))
 text(x = (min(sim_res$proposed$lambda0.5$z[,1])+
-            max(sim_res$proposed$lambda0.5$z[,1]))/2 -3, 
+            max(sim_res$proposed$lambda0.5$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.5$z[,2]) - 0.5,
-     paste("p = ", sim_res$proposed_perm[4]))
+     paste("p = ", sim_res$proposed_perm[6]))
 mtext(paste(
-  "Stress1 = ", 
+  "Stress1 = ",
   round(sqrt(sum((sim_data$dist - dist(sim_res$proposed$lambda0.5$z))^2) /
                sum((dist(sim_res$proposed$lambda0.5$z))^2)), 4)), side=3)
 
 plot(sim_res$proposed$lambda0.7$z, main = "lambda = 0.7", col = sim_data$data$Y)
 text(x = (min(sim_res$proposed$lambda0.7$z[,1])+
-            max(sim_res$proposed$lambda0.7$z[,1]))/2 -3, 
+            max(sim_res$proposed$lambda0.7$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.7$z[,2]),
      paste("F_z = ", round(sim_res$proposed_perm[5], 3)))
 text(x = (min(sim_res$proposed$lambda0.7$z[,1])+
-            max(sim_res$proposed$lambda0.7$z[,1]))/2 -3, 
+            max(sim_res$proposed$lambda0.7$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.7$z[,2]) - 0.5,
      paste("p = ", sim_res$proposed_perm[6]))
 mtext(paste(
-  "Stress1 = ", 
+  "Stress1 = ",
   round(sqrt(sum((sim_data$dist - dist(sim_res$proposed$lambda0.7$z))^2) /
                sum((dist(sim_res$proposed$lambda0.7$z))^2)), 4)), side=3)
 dev.off()
