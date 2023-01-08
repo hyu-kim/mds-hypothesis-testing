@@ -1,3 +1,5 @@
+library(scales)
+
 #####TTD
 #0. Do with real data labels
 #### Site 1
@@ -23,7 +25,15 @@ get_p(trt = y1, mat = zmds1)$p # p = 0.001
 res1$lambda0.3$F_z # pseudo-F = 10.70738
 get_p(trt = y1, mat = res1$lambda0.3$z)$p # p = 0.001
 
-## Configurations
+## Configurations 
+setEPS()
+postscript("result/config_site1.eps", width = 6, height = 2.4)
+par(mfrow = c(1, 3))
+plot(zmds1, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y1)])
+plot(res1$lambda0.3$z, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y1)])
+plot(res1$lambda0.5$z, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y1)])
+dev.off()
+
 pdf("data/result/config_site1.pdf",
     width = 9, height = 9)
 par(mfrow = c(2,2))
@@ -75,39 +85,35 @@ mtext(paste(
 dev.off()
 
 ## Shepard
-pdf("data/result/shepard_site1.pdf",
-    width = 9, height = 9)
+pdf("result/shepard_site1_v2.pdf", width = 7, height = 8)
 par(mfrow = c(2, 2))
 plot(dist1, dist(zmds1),
-     xlab = "original distance", ylab = "configuration distance",
-     main = "Pure MDS")
-mtext(paste(
-  "Stress1 = ", 
-  round(sqrt(sum((dist1 - dist(zmds1))^2) /
-               sum((dist(zmds1))^2)), 4)), side=3)
+     xlab = "original", ylab = "configuration",
+     main = "lambda = 0", col = alpha("black", 0.2), pch=16)
 plot(dist1, dist(res1$lambda0.1$z),
-     xlab = "original distance", ylab = "configuration distance",
-     main = expression(paste(lambda, "= 0.1")))
-mtext(paste(
-  "Stress1 = ", 
-  round(sqrt(sum((dist1 - dist(res1$lambda0.1$z))^2) /
-               sum((dist(res1$lambda0.1$z))^2)), 4)), side=3)
+     xlab = "original", ylab = "configuration",
+     main = "lambda = 0.1", col = alpha("black", 0.2), pch=16)
 plot(dist1, dist(res1$lambda0.3$z),
-     xlab = "original distance", ylab = "configuration distance",
-     main = expression(paste(lambda, "= 0.3")))
-mtext(paste(
-  "Stress1 = ", 
-  round(sqrt(sum((dist1 - dist(res1$lambda0.3$z))^2) /
-               sum((dist(res1$lambda0.3$z))^2)), 4)), side=3)
+     xlab = "original", ylab = "configuration",
+     main = "lambda = 0.3", col = alpha("black", 0.2), pch=16)
 plot(dist1, dist(res1$lambda0.5$z),
-     xlab = "original distance", ylab = "configuration distance",
-     main = expression(paste(lambda, "= 0.5")))
-mtext(paste(
-  "Stress1 = ", 
-  round(sqrt(sum((dist1 - dist(res1$lambda0.5$z))^2) /
-               sum((dist(res1$lambda0.5$z))^2)), 4)), side=3)
+     xlab = "original", ylab = "configuration",
+     main = "lambda = 0.5", col = alpha("black", 0.2), pch=16)
 dev.off()
 
+# Spearman correlation
+print(round(
+  cov(dist1, dist(zmds1)) / (sd(dist1) * sd(dist(zmds1))), 
+  4))
+print(round(
+  cov(dist1, dist(res1$lambda0.1$z)) / (sd(dist1) * sd(dist(res1$lambda0.1$z))), 
+  4))
+print(round(
+  cov(dist1, dist(res1$lambda0.3$z)) / (sd(dist1) * sd(dist(res1$lambda0.3$z))), 
+  4))
+print(round(
+  cov(dist1, dist(res1$lambda0.5$z)) / (sd(dist1) * sd(dist(res1$lambda0.5$z))), 
+  4))
 
 #### Site 2
 res2 <- 
@@ -132,6 +138,16 @@ res2$lambda0.3$F_z # pseudo-F = 2.374346
 get_p(trt = y2, mat = res2$lambda0.3$z)$p # p = 0.094
 
 ## Configurations
+# EPS
+setEPS()
+postscript("result/config_site2.eps", width = 6, height = 2.4)
+par(mfrow = c(1, 3))
+plot(zmds2, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y2)])
+plot(res2$lambda0.3$z, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y2)])
+plot(res2$lambda0.5$z, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y2)])
+dev.off()
+
+# PDF
 pdf("data/result/config_site2.pdf",
     width = 9, height = 9)
 par(mfrow = c(2,2))
@@ -182,39 +198,36 @@ mtext(paste(
                sum((dist(res2$lambda0.5$z))^2)), 4)), side=3)
 dev.off()
 
+
 ## Shepard
-pdf("data/result/shepard_site2.pdf",
-    width = 9, height = 9)
+pdf("result/shepard_site2_v2.pdf", width = 7, height = 8)
 par(mfrow = c(2, 2))
 plot(dist2, dist(zmds2),
-     xlab = "original distance", ylab = "configuration distance",
-     main = "Pure MDS")
-mtext(paste(
-  "Stress1 = ", 
-  round(sqrt(sum((dist2 - dist(zmds2))^2) /
-               sum((dist(zmds2))^2)), 4)), side=3)
+     xlab = "original", ylab = "configuration",
+     main = "lambda = 0", col = alpha("black", 0.2), pch=16)
 plot(dist2, dist(res2$lambda0.1$z),
-     xlab = "original distance", ylab = "configuration distance",
-     main = expression(paste(lambda, "= 0.1")))
-mtext(paste(
-  "Stress1 = ", 
-  round(sqrt(sum((dist2 - dist(res2$lambda0.1$z))^2) /
-               sum((dist(res2$lambda0.1$z))^2)), 4)), side=3)
+     xlab = "original", ylab = "configuration",
+     main = "lambda = 0.1", col = alpha("black", 0.2), pch=16)
 plot(dist2, dist(res2$lambda0.3$z),
-     xlab = "original distance", ylab = "configuration distance",
-     main = expression(paste(lambda, "= 0.3")))
-mtext(paste(
-  "Stress1 = ", 
-  round(sqrt(sum((dist2 - dist(res2$lambda0.3$z))^2) /
-               sum((dist(res2$lambda0.3$z))^2)), 4)), side=3)
+     xlab = "original", ylab = "configuration",
+     main = "lambda = 0.3", col = alpha("black", 0.2), pch=16)
 plot(dist2, dist(res2$lambda0.5$z),
-     xlab = "original distance", ylab = "configuration distance",
-     main = expression(paste(lambda, "= 0.5")))
-mtext(paste(
-  "Stress1 = ", 
-  round(sqrt(sum((dist2 - dist(res2$lambda0.5$z))^2) /
-               sum((dist(res2$lambda0.5$z))^2)), 4)), side=3)
+     xlab = "original", ylab = "configuration",
+     main = "lambda = 0.5", col = alpha("black", 0.2), pch=16)
 dev.off()
+# Pearson correlation
+print(round(
+  cov(dist2, dist(zmds2)) / (sd(dist2) * sd(dist(zmds2))), 
+  4))
+print(round(
+  cov(dist2, dist(res2$lambda0.1$z)) / (sd(dist2) * sd(dist(res2$lambda0.1$z))), 
+  4))
+print(round(
+  cov(dist2, dist(res2$lambda0.3$z)) / (sd(dist2) * sd(dist(res2$lambda0.3$z))), 
+  4))
+print(round(
+  cov(dist2, dist(res2$lambda0.5$z)) / (sd(dist2) * sd(dist(res2$lambda0.5$z))), 
+  4))
 
 #1. Check no symm-matrix issues (summing twice, etc)
 #2. Try with permutation on original data (previous to unifrac)
