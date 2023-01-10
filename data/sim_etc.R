@@ -250,14 +250,14 @@ sim_data$distmat <- as.matrix(dist(sim_data$data[, 1:3]))
 sim_data$dist <- dist(sim_data$data[, 1:3])
 
 setEPS()
-postscript("result/sim_data_2d.eps", width = 8, height = 3)
+postscript("result/sim_data_2d.eps", width = 7, height = 2.7)
 par(mfrow = c(1, 3))
 plot(sim_data$data$X1, sim_data$data$X2,
-     xlab = "X1", ylab = "X2", pch = c(1,16)[as.numeric(sim_data$data$Y)])
+     xlab = "X1", ylab = "X2", pch = c(1,4)[as.numeric(sim_data$data$Y)])
 plot(sim_data$data$X1, sim_data$data$X3,
-     xlab = "X1", ylab = "X3", pch = c(1,16)[as.numeric(sim_data$data$Y)])
+     xlab = "X1", ylab = "X3", pch = c(1,4)[as.numeric(sim_data$data$Y)])
 plot(sim_data$data$X2, sim_data$data$X3,
-     xlab = "X2", ylab = "X3", pch = c(1,16)[as.numeric(sim_data$data$Y)])
+     xlab = "X2", ylab = "X3", pch = c(1,4)[as.numeric(sim_data$data$Y)])
 dev.off()
 
 
@@ -315,14 +315,11 @@ names(sim_res$proposed) <- c("lambda0.3", "lambda0.5", "lambda0.7")
 
 ## Configurations in EPS
 setEPS()
-postscript("result/config_sim.eps", width = 8, height = 3)
+postscript("result/config_sim.eps", width = 7, height = 2.7)
 par(mfrow = c(1, 3))
-plot(sim_res$mds, pch = c(1,16)[as.numeric(sim_data$data$Y)])
-plot(sim_res$proposed$lambda0.3$z, 
-     pch = c(1,16)[as.numeric(sim_data$data$Y)])
-
-plot(sim_res$proposed$lambda0.5$z, 
-     pch = c(1,16)[as.numeric(sim_data$data$Y)])
+plot(sim_res$mds, pch = c(1,4)[as.numeric(sim_data$data$Y)])
+plot(sim_res$proposed$lambda0.3$z, pch = c(1,4)[as.numeric(sim_data$data$Y)])
+plot(sim_res$proposed$lambda0.5$z, pch = c(1,4)[as.numeric(sim_data$data$Y)])
 dev.off()
 
 
