@@ -1,4 +1,13 @@
 library(scales)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+
+# Default theme for ggplot2
+theme_set(theme_bw() + 
+            theme(legend.position="bottom", 
+                  panel.grid.major = element_blank(), 
+                  panel.grid.minor = element_blank()))
 
 #####TTD
 #0. Do with real data labels
@@ -314,14 +323,26 @@ names(sim_res$proposed) <- c("lambda0.3", "lambda0.5", "lambda0.7")
 
 
 ## Configurations in EPS
+ysim <- as.factor(sim_data$data$Y)
 setEPS()
-postscript("result/config_sim.eps", width = 7, height = 2.7)
-par(mfrow = c(1, 3))
-plot(sim_res$mds, pch = c(1,4)[as.numeric(sim_data$data$Y)])
-plot(sim_res$proposed$lambda0.3$z, pch = c(1,4)[as.numeric(sim_data$data$Y)])
-plot(sim_res$proposed$lambda0.5$z, pch = c(1,4)[as.numeric(sim_data$data$Y)])
+postscript("result/config_sim.eps", width = 8, height = 3.3)
+p1 <- ggplot(data.frame(cbind(sim_res$mds, ysim)), aes(x=X1, y=X2)) + 
+  geom_point(aes(shape = ysim)) + 
+  stat_ellipse(level = 0.8, size=0.2, aes(linetype=ysim, group=ysim)) +
+  scale_shape_manual(values=c(16,1)) +
+  scale_linetype_manual(values = c('longdash','dotdash'))
+p2 <- ggplot(data.frame(cbind(sim_res$proposed$lambda0.3$z, ysim)), aes(x=X1, y=X2)) + 
+  geom_point(aes(shape = ysim)) + 
+  stat_ellipse(level = 0.8, size=0.2, aes(linetype=ysim, group=ysim)) +
+  scale_shape_manual(values=c(16,1)) +
+  scale_linetype_manual(values = c('longdash','dotdash'))
+p3 <- ggplot(data.frame(cbind(sim_res$proposed$lambda0.5$z, ysim)), aes(x=X1, y=X2)) + 
+  geom_point(aes(shape = ysim)) + 
+  stat_ellipse(level = 0.8, size=0.2, aes(linetype=ysim, group=ysim)) +
+  scale_shape_manual(values=c(16,1)) +
+  scale_linetype_manual(values = c('longdash','dotdash'))
+grid.arrange(p1, p2, p3, nrow = 1)
 dev.off()
-
 
 ## Configurations in pdf
 plot(sim_res$proposed$lambda0.3$z, main = "Pure MDS", col = sim_data$data$Y)
