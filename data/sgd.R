@@ -52,7 +52,7 @@ mds_obj <- function(D, z){
 
 # confirmatory objective term
 conf_obj <- function(y, z, D){
-  z_distmat <- get_dist_mat(z)
+  z_distmat <- as.matrix(dist(z))
   y_indmat <- get_ind_mat(y)
   phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
   f_loess <- pair_by_rank(D=D, z=z, y=y, fun=get_phi)$model
@@ -64,9 +64,11 @@ conf_obj <- function(y, z, D){
 
 
 # gradient term for SGD update, pertaining to a case k=i
-grad_obj <- function(z_i, z_j, d_ij, lambda, delta, phi_z, eps){
-  v <- (1 - d_ij/norm(z_i-z_j, type='2') + lambda*delta*(1-(phi_z+1)*eps)) * (z_i - z_j)
-  return(v)
+grad_obj <- function(N, S, i1, i2, z1, z2, d12, lambda, delta, phi_z, eps){
+  grad <- matrix(0, nrow=N, ncol=S)
+  grad[i1,] <- (1 - d12/norm(z1-z2, type='2') + lambda*delta*(1-(phi_z+1)*eps)) * (z1 - z2)
+  grad[i2,] <- -grad[i1]
+  return(grad)
 }
 
 
@@ -90,9 +92,34 @@ sgd_cmds <- function(nit = 100, eta = 1e-4, lambda = 0.2, z0, D, y){
                 '  mds', sprintf(obj_mds_up, fmt = '%#.3f'), 
                 '  conf', sprintf(obj_conf_up$val, fmt = '%#.3f'),
                 '  Fz', sprintf(Fz_up, fmt = '%#.2f'),
-                '  F0', sprintf(F0, fmt = '%#.2f')
-    ))
-    
+                '  F0', sprintf(F0, fmt = '%#.2f')))
+    if(lambda==0){
+      phi_z <- phi_o
+    } else {
+      f_loess <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$model
+      phi_z <- predict(f_loess, phi_o)  # perform loess for accurate F mapping
+    }
+    inds <- sample(1:N, 2)
+    z1 <- z_up[inds[1],]
+    z2 <- z_up[inds[2],]
+    d12 <- D[inds[1],inds[2]]
+    eps12 <- y_indmat[inds[1],inds[2]]
+    delta <- conf_obj(y, z_up, D)$sign
+    # compute gradient
+    grad_obj <- matrix(0, nrow=N, ncol=S)
+    grad_obj[inds[1],] <- (1 - d12/norm(z1-z2, type='2') 
+                           + lambda*delta*(1-(phi_z+1)*eps12)) * (z1-z2)
+    grad_obj[inds[2],] <- -grad_obj[inds[1],]
+    z_up <- z_up - eta*grad_obj  # update
   }
+  obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
+  obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
+  Fz_up <- pseudo_F(mat = z_up, trt = y)$ratio
+  return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f, F_z = Fz_up, F_0 = F0))
 }
 
+
+# run
+zmds2 <- ordu2$vectors[,1:2]
+y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
+obj_sgd <- sgd_cmds(nit=100, eta = 1e-3, lambda=20, z0=zmds2, D=distmat2, y=y2)

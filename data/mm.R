@@ -138,11 +138,9 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
 # run
 zmds1 <- ordu1$vectors[,1:2]
 zmds2 <- ordu2$vectors[,1:2]
-y1s <- read.table('result/labels_site1.txt', sep=',', header=TRUE)
-y2s <- read.table('result/labels_site2.txt', sep=',', header=TRUE)
 y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
-obmm_x <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,1])  # just an example. replace x with any number you want
+obmm_x <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2)  # just an example. replace x with any number you want
 
 
 # plot
