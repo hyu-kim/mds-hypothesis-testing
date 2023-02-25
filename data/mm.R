@@ -106,6 +106,7 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
       } else {
         f_loess <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$model
         phi_up <- predict(f_loess, phi)  # perform loess for accurate F mapping
+        phi_z <- get_phi(mat=z_up, trt=y)$ratio
       }
       
       delta <- conf_obj(y, z_up, D)$sign
@@ -120,8 +121,10 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
         apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
       z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi_up)*lambda*delta)
       z_up[i,] <- z_temp[i,]
-      if(i %in% seq(from=10, to = N, by=10)){
-        print(paste(i, "of", N, "observation updated")) ##to check progress
+      if(i %in% seq(from=5, to = N, by=5)){
+        print(paste("..sample", i, "of", N,
+                    '  phi_z', sprintf(phi_z, fmt = '%#.2f'),
+                    '  phi_z_pred', sprintf(phi_up, fmt = '%#.2f'))) ##to check progress
       }
     }
     # z_up <- z_temp
