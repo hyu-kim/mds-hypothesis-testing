@@ -78,6 +78,21 @@ conf_obj <- function(y, z, D){
 }
 
 
+# plots f_loess and marks phi, phi_z, phi_up
+plot_loess <- function(model, df, phi, phi_z, phi_up, t){
+  loess_phi <- predict(model)
+  pdf(paste("result/iss#15/loess_nit",t,".pdf", sep=''))
+  plot(df[,1], df[,2], pch=20,
+       xlab="phi_o", ylab="phi_z", 
+       xlim=c(1, 1.25), ylim=c(1, 1.6))
+  lines(loess_phi, x=df[,1], col='blue', lty=2)
+  points(phi, phi_z, pch=15, col='red', cex=2) # square
+  points(phi, phi_up, pch=17, col='red', cex=2) # triangle
+  legend('bottomright', legend=c('o: raw','--: loess', 'sq: phi_z', '^: phi_pred'))
+  dev.off()
+}
+
+
 mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
                     z0, D, y){
   N <- dim(z0)[1]
@@ -104,9 +119,12 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
       if(lambda==0){
         phi_up <- phi
       } else {
-        f_loess <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$model
+        loess_phi <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)
+        phi_pair <- loess_phi$pair
+        f_loess <- loess_phi$model
         phi_up <- predict(f_loess, phi)  # perform loess for accurate F mapping
         phi_z <- get_phi(mat=z_up, trt=y)$ratio
+        if(i==1){plot_loess(f_loess, phi_pair, phi, phi_z, phi_up, t)}
       }
       
       delta <- conf_obj(y, z_up, D)$sign
