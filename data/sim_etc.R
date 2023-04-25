@@ -437,4 +437,3 @@ mtext(paste(
   round(sqrt(sum((sim_data$dist - dist(sim_res$proposed$lambda0.7$z))^2) /
                sum((dist(sim_res$proposed$lambda0.7$z))^2)), 4)), side=3)
 dev.off()
-
