@@ -1,5 +1,4 @@
 library(tsne)
-dist1
 
 tsne1 <- list()
 for(perp in c(5:10)){
@@ -22,67 +21,83 @@ for(perp in c(5:10)){
   tsne2_dist[[perp]] <- dist(tsne2[[perp]])
 }
 
+### F and p value
+tsne1_res <- tsne2_res <- data.frame(
+  perplexity = c(5:10),
+  pseudo_F = rep(0, 6),
+  p_val = rep(0, 6)
+)
 
-pdf("tsne.pdf", width = 10, height = 6)
-par(mfrow = c(2,3), mar = c(3,3,2,1))
-for(perp in c(5:10)){
-  plot(tsne1[[perp]], col = y1, main = perp)
+set.seed(100)
+for(i in 1:6){
+  ttt <- get_p(mat = tsne1[[i+4]], trt = y1)
+  tsne1_res$pseudo_F[i] <- ttt$ratio
+  tsne1_res$p_val[i] <- ttt$p
+  ttt <- get_p(mat = tsne2[[i+4]], trt = y2)
+  tsne2_res$pseudo_F[i] <- ttt$ratio
+  tsne2_res$p_val[i] <- ttt$p
 }
 
-par(mfrow = c(2,3), mar = c(3,3,2,1))
+#### Plots
+pdf("tsne.pdf", width = 9, height = 6)
+par(mfrow = c(2,3))
 for(perp in c(5:10)){
-  plot(tsne2[[perp]], col = y2, main = perp)
+  plot(tsne1[[perp]], col = y1, main = paste("S1, perp=", perp),
+       xlab = "config1", ylab = "config2")
+  mtext(paste("F=", round(tsne1_res$pseudo_F[perp-4], 2),
+              ", p=", tsne1_res$p_val[perp-4]), side=3)
+}
+for(perp in c(5:10)){
+  plot(tsne2[[perp]], col = y2, main = paste("S2, perp=", perp),
+       xlab = "config1", ylab = "config2")
+  mtext(paste("F=", round(tsne2_res$pseudo_F[perp-4], 2),
+              ", p=", tsne2_res$p_val[perp-4]), side=3)
 }
 dev.off()
 
 
 #### Shepard Plot
-# Some definitions switches x and y axis
-pdf("tsne_shepard.pdf", width = 10, height = 6)
 ## Original distance
+pdf("tsne_shepard_orig.pdf", width = 9, height = 6)
 par(mfrow = c(2,3))
 for(perp in 5:10){
   plot(dist1, tsne1_dist[[perp]],
        xlab = "original distance", ylab = "configuration distance",
-       main = paste("Site1,Perp=", perp, by = ""))
+       main = paste("S1, Perp=", perp, by = ""))
   mtext(paste(
     "Stress1 = ", 
     round(sqrt(sum((dist1 - tsne1_dist[[perp]])^2) /
                  sum((tsne1_dist[[perp]])^2)), 4)), side=3)
 }
-
+for(perp in 5:10){
+  plot(dist2, tsne2_dist[[perp]],
+       xlab = "original distance", ylab = "configuration distance",
+       main = paste("S2, Perp=", perp, by = ""))
+  mtext(paste(
+    "Stress1 = ", 
+    round(sqrt(sum((dist2 - tsne2_dist[[perp]])^2) /
+                 sum((tsne2_dist[[perp]])^2)), 4)), side=3)
+}
+dev.off()
 
 ## Scaled distance
+pdf("tsne_shepard_scaled.pdf", width = 9, height = 6)
 par(mfrow = c(2,3))
 for(perp in 5:10){
   plot(dist1/max(dist1), tsne1_dist[[perp]]/max(tsne1_dist[[perp]]),
        xlab = "original distance", ylab = "configuration distance",
-       main = paste("Site1,Perp=", perp, by = ""))
+       main = paste("S1,Perp=", perp, by = ""))
   mtext(paste(
     "Stress1 = ", 
     round(sqrt(sum((dist1/max(dist1) - tsne1_dist[[perp]]/max(tsne1_dist[[perp]]))^2) /
                  sum((tsne1_dist[[perp]]/max(tsne1_dist[[perp]]))^2)), 4)), side=3)
 }
 
-## Original distance
 par(mfrow = c(2,3))
 for(perp in 5:10){
-  plot(dist2, tsne2_dist[[perp]],
+  plot(dist2/max(dist2), tsne2_dist[[perp]]/max(tsne2_dist[[perp]]),
        xlab = "original distance", ylab = "configuration distance",
-       main = paste("Site2,Perp=", perp, by = ""))
-  mtext(paste(
-    "Stress1 = ", 
-    round(sqrt(sum((dist2 - tsne2_dist[[perp]])^2) /
-                 sum((tsne2_dist[[perp]])^2)), 4)), side=3)
-}
-
-
-## Scaled distance
-par(mfrow = c(2,3))
-for(perp in 5:10){
-  plot(dist2/max(dist1), tsne2_dist[[perp]]/max(tsne2_dist[[perp]]),
-       xlab = "original distance", ylab = "configuration distance",
-       main = paste("Site1,Perp=", perp, by = ""))
+       main = paste("S2,Perp=", perp, by = ""))
   mtext(paste(
     "Stress1 = ", 
     round(sqrt(sum((dist2/max(dist2) - tsne2_dist[[perp]]/max(tsne2_dist[[perp]]))^2) /
@@ -90,9 +105,4 @@ for(perp in 5:10){
 }
 
 dev.off()
-## Stress-1: Scaled Stress
-## For its definition, see, for example,
-## Andreas Buja, Deborah F Swayne, Michael L Littman, Nathaniel Dean, Heike Hofmann & Lisha Chen (2008) 
-## Data Visualization With Multidimensional Scaling, 
-## Journal of Computational and Graphical Statistics, 17:2, 444-472
-## (it is in our shared google drive)
+
