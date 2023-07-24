@@ -1,3 +1,4 @@
+library(SIBER)
 library(scales)
 library(ggplot2)
 library(grid)
@@ -322,31 +323,18 @@ names(sim_res$proposed) <- c("lambda0.3", "lambda0.5", "lambda0.7")
 
 
 
-## Configurations in EPS
-ysim <- as.factor(sim_data$data$Y)
-setEPS()
-postscript("result/config_sim.eps", width = 8, height = 3.3)
-p1 <- ggplot(data.frame(cbind(sim_res$mds, ysim)), aes(x=X1, y=X2)) + 
-  geom_point(aes(shape = ysim)) + 
-  stat_ellipse(level = 0.8, size=0.2, aes(linetype=ysim, group=ysim)) +
-  scale_shape_manual(values=c(16,1)) +
-  scale_linetype_manual(values = c('longdash','dotdash'))
-p2 <- ggplot(data.frame(cbind(sim_res$proposed$lambda0.3$z, ysim)), aes(x=X1, y=X2)) + 
-  geom_point(aes(shape = ysim)) + 
-  stat_ellipse(level = 0.8, size=0.2, aes(linetype=ysim, group=ysim)) +
-  scale_shape_manual(values=c(16,1)) +
-  scale_linetype_manual(values = c('longdash','dotdash'))
-p3 <- ggplot(data.frame(cbind(sim_res$proposed$lambda0.5$z, ysim)), aes(x=X1, y=X2)) + 
-  geom_point(aes(shape = ysim)) + 
-  stat_ellipse(level = 0.8, size=0.2, aes(linetype=ysim, group=ysim)) +
-  scale_shape_manual(values=c(16,1)) +
-  scale_linetype_manual(values = c('longdash','dotdash'))
-grid.arrange(p1, p2, p3, nrow = 1)
-dev.off()
 
-## Configurations in pdf
-plot(sim_res$proposed$lambda0.3$z, main = "Pure MDS", col = sim_data$data$Y)
-text(x = (min(sim_res$mds[,1]) + max(sim_res$mds[,1]))/2 -3,
+## Configurations
+# ellipse setting
+# mu <- colMeans(dat)
+# Sigma <- cov(dat)
+# addEllipse(mu, Sigma, p.interval = 0.95, col = "blue", lty = 3)
+pdf("data/result/config_sim.pdf",
+    width = 9, height = 9)
+par(mfrow = c(2,2), mar = c(2,2,3,1))
+plot(sim_res$mds, main = "Pure MDS", col = sim_data$data$Y)
+text(x = (min(sim_res$mds[,1])+
+            max(sim_res$mds[,1]))/2 -3, 
      y = max(sim_res$mds[,2]),
      paste("F_z = ", round(sim_res$mds_perm$ratio, 3)))
 text(x = (min(sim_res$mds[,1]) + max(sim_res$mds[,1]))/2 -3,
