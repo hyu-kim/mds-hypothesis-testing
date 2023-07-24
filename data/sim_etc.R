@@ -1,3 +1,5 @@
+library(SIBER)
+
 #####TTD
 #0. Do with real data labels
 #### Site 1
@@ -303,6 +305,10 @@ names(sim_res$proposed) <- c("lambda0.3", "lambda0.5", "lambda0.7")
 
 
 ## Configurations
+# ellipse setting
+mu <- colMeans(dat)
+Sigma <- cov(dat)
+addEllipse(mu, Sigma, p.interval = 0.95, col = "blue", lty = 3)
 pdf("data/result/config_sim.pdf",
     width = 9, height = 9)
 par(mfrow = c(2,2), mar = c(2,2,3,1))
