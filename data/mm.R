@@ -114,7 +114,7 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
       z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi_up)*lambda*delta)
       z_up[i,] <- z_temp[i,]
       if(i %in% seq(from=10, to = N, by=10)){
-        print(paste(".. ", i, "of", N, "updated")) ##to check progress
+        print(paste("..", i, "of", N, "updated")) ##to check progress
       }
     }
     # z_up <- z_temp
@@ -135,7 +135,8 @@ y1s <- read.table('result/labels_site1.txt', sep=',', header=TRUE)
 y2s <- read.table('result/labels_site2.txt', sep=',', header=TRUE)
 y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
-obmm <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,1])  # just an example. replace x with any number you want
+obmm <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,1])  
+  # just an example. replace x with any number you want
 
 
 # plot
