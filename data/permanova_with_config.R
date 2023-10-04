@@ -50,10 +50,9 @@ pseudo_F_iter <- function(mat=NULL, d=NULL, y_iter){
   ind_iter <- (y_iter_3d == y_iter_3d_t) * 1
   ind_iter <- aperm(ind_iter, c(1,3,2))  # now (N, N, n_iter)
   # }
-  matrix()
   d_3d <- array(rep(d, n_iter), dim=c(N, N, n_iter))
-  nomi <- rowSums(aperm(ind_iter * d_3d * d_3d, c(3,2,1)), dims=1)  # merge over N by N, leaving n_iter
-  denomi <- d_sq_sum <- 2*sum(d^2)  # this is denominator
+  nomi <- 2 * rowSums(aperm(ind_iter * d_3d * d_3d, c(3,2,1)), dims=1)  # merge over N by N, leaving n_iter
+  denomi <- d_sq_sum <- sum(d^2)  # this is denominator
   return((denomi/nomi - 1)*(N-2))
 }
 
@@ -82,7 +81,7 @@ get_p <- function(mat=NULL, d=dist1, trt=y1, n_iter=999, fun=pseudo_F){
   p_val <- (p_val-1)/(n_iter+1)
   
   time2 = Sys.time()
-  print(paste('elapsed:', time2-time1))
+  # print(paste('elapsed:', time2-time1))
   return(list(ratio_all = f_sorted, ratio = f_val, p = p_val))
 }
 
