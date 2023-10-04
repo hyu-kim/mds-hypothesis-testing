@@ -79,12 +79,12 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
   phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
   delta <- conf_obj(y, z0, D)$sign
   z_temp <- z_up <- z0
-  p0 <- get_p(d = D, trt = y)$p
+  p0 <- get_p(d = D, trt = y)$ratio
   for(t in 1:nit){
     obj_conf_up <- conf_obj(y, z_up, D)
     obj_mds_up <- mds_obj(D, z_up)
     obj_up <- lambda*obj_conf_up$val + obj_mds_up
-    p_up <- get_p(mat = z_up, trt = y)$p
+    p_up <- get_p(mat = z_up, trt = y)$ratio
     print(paste('epoch', t, 
                 '  total', sprintf(obj_up, fmt = '%#.3f'), 
                 '  mds', sprintf(obj_mds_up, fmt = '%#.3f'), 
@@ -123,7 +123,7 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
   
   obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
   obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
-  p_up <- get_p(mat = z_up, trt = y)$p
+  p_up <- get_p(mat = z_up, trt = y)$ratio
   return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f, p_z = p_up, p_0 = p0))
 }
 
