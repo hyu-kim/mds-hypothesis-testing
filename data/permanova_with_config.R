@@ -57,7 +57,7 @@ pseudo_F_iter <- function(mat=NULL, d=NULL, y_iter){
 }
 
 
-get_p <- function(mat=NULL, d=dist1, trt=y1, n_iter=999, fun=pseudo_F){
+get_p <- function(mat=NULL, d=NULL, trt=y1, n_iter=999, fun=pseudo_F){
   time1 = Sys.time()
   
   # initialize then iterate to get pseudo F
