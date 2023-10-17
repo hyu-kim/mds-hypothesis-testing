@@ -134,11 +134,11 @@ def filter_data(x, y, core_thresh, opp_thresh):
 	
 	return core
 
-def prepare_data(path, config):
+def prepare_data(path, config, site):
 
 	thresh = config.get('Evaluation', 'FilterThresh')
-	data = pd.read_csv(path + '/abundance.tsv', index_col=0, sep='\t', header=None)
-	labels = np.genfromtxt(path + '/labels.txt', dtype=np.str_, delimiter=',')
+	data = pd.read_csv(path + '/abundance_' + site + '.tsv', index_col=0, sep='\t', header=None)
+	labels = np.genfromtxt(path + '/labels_' + site + '.txt', dtype=np.str_, delimiter=',')
 	core_filt_thresh = float(thresh)
 	opp_filt_thresh = 0.0
 	
@@ -159,12 +159,12 @@ def prepare_data(path, config):
 
 	
 	features = list(data.columns.values)
-	print("There are %d raw features..." % (len(features)))
+	print(site + ": " + str(len(features)) + " raw features...")
 	features_df = get_feature_df(features)
 		
 	print("Building tree structure...")
 	try:
-		g = pickle.load(open(path + "/PopPhy-tree-" + str(core_filt_thresh) + "-core.pkl", 'rb'))
+		g = pickle.load(open(path + "/PopPhy-tree-" + str(core_filt_thresh) + "-core-" + site + ".pkl", 'rb'))
 		print("Found tree file...")
 	except:
 		print("Tree file not found...")
@@ -172,7 +172,7 @@ def prepare_data(path, config):
 		g = Graph()
 		g.build_graph()
 		g.prune_graph(features_df)
-		pickle.dump(g, open(path + "/PopPhy-tree-" + str(core_filt_thresh) + "-core.pkl", 'wb'))
+		pickle.dump(g, open(path + "/PopPhy-tree-" + str(core_filt_thresh) + "-core-" + site + ".pkl", 'wb'))
 
 	print("Populating trees...")		
 	results = Parallel(n_jobs=num_cores)(delayed(generate_maps)(x,g,features_df) for x in data.values)

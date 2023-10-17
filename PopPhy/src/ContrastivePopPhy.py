@@ -99,9 +99,9 @@ class ContrastiveModel(keras.Model):
         )
         return (loss_1_2 + loss_2_1) / 2
 
-    def train_step(self, images, labels):
+    def train_step(self, data):
         # Unpack the data
-        # images, labels = data
+        images, labels = data[0], data[1]
         
         # # Both labeled and unlabeled images are used, without labels
         # images = tf.concat((unlabeled_images, labeled_images), axis=0)

@@ -1,8 +1,12 @@
+## creates and exports dataframe for neural network training
 library("phyloseq")
 
 ps = readRDS("community_phyloseq.Rds")
+site1 = subset_samples(ps, Site=="1") # subset
+site2 = subset_samples(ps, Site=="2")
 
-df <- psmelt(ps)
+site1_df <- psmelt(site1)
+site2_df <- psmelt(site2)
 
 add_taxa <- function(df, tax_abb=c('k','p','c','o','f','g','s')){
   df_summ <- df[,c("Sample",'Abundance')]
@@ -19,7 +23,8 @@ add_taxa <- function(df, tax_abb=c('k','p','c','o','f','g','s')){
   return(df_summ)
 }
 
-df_summ <- add_taxa(df)
+site1_df_summ <- add_taxa(site1_df)
+site2_df_summ <- add_taxa(site2_df)
 
 get_matrix <- function(df_summ){
   df_out <- data.frame(matrix(0, nrow=length(unique(df_summ$Taxon)), ncol=length(unique(df_summ$Sample))))
@@ -37,8 +42,21 @@ get_matrix <- function(df_summ){
   return(df_out)
 }
 
-df_out <- get_matrix(df_summ)
-write.table(df_out, file = "result/Alga/abundance.tsv", row.names=TRUE, col.names=FALSE, sep="\t")
+site1_df_out <- get_matrix(site1_df_summ)
+site2_df_out <- get_matrix(site2_df_summ)
 
-lab <- as.numeric(grepl("Con1", colnames(df_out)))
-write.table(lab, file = "result/Alga/labels.txt", sep='\n', col.names=FALSE, row.names=FALSE)
+setwd('..')
+
+write.table(site1_df_out, file = "PopPhy/data/Alga/abundance_site1.tsv", 
+            row.names=TRUE, col.names=FALSE, sep="\t")
+write.table(site2_df_out, file = "PopPhy/data/Alga/abundance_site2.tsv", 
+            row.names=TRUE, col.names=FALSE, sep="\t")
+
+lab1 <- as.numeric(grepl("Con1", colnames(site1_df_out)))
+lab2 <- as.numeric(grepl("Con1", colnames(site2_df_out)))
+
+
+write.table(lab1, file = "PopPhy/data/Alga/labels_site1.txt", sep='\n', 
+            col.names=FALSE, row.names=FALSE)
+write.table(lab2, file = "PopPhy/data/Alga/labels_site2.txt", sep='\n', 
+            col.names=FALSE, row.names=FALSE)
