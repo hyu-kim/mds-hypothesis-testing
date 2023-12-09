@@ -1,7 +1,7 @@
 # mds-hypothesis-testing
 
 - Multidimensional scaling method for _F_-informed hypothesis testing.
-- Manuscript in prepartion, to appear in early 2023.
+- Paper link = https://arxiv.org/abs/2308.00354
 
 ### Summary
->We present a new multidimensional scaling method informed by a binary data label via _F_-ratio. We compare its performance to an existing label-informed MDS, and report a unique behavior that is less dependent on a selection of a model hyperparamter.We evaluate its twodimensional MDS configuration from a simulated data or a 16S rRNA gene expression levels, and demonstrate that our method can address a hypothesis testing result at the same time. By efficiently incorporating a testing statistic from data labels, the proposed MDS method expands its applicability in modern biological data analysis and multivariate statistics.
+>Multidimensional scaling (MDS) is an unsupervised learning technique that preserves pairwise distances between observations and is commonly used for analyzing multivariate biological datasets. Recent advances in MDS have achieved successful classification results, but the configurations heavily depend on the choice of hyperparameters, limiting its broader application. Here, we present a self-supervised MDS approach informed by the dispersions of observations that share a common binary label (_F_-ratio). Our visualization accurately configures the _F_-ratio while consistently preserving the global structure with a low data distortion compared to existing dimensionality reduction tools. Using an algal microbiome dataset, we show that this new method better illustrates the community's response to the host, suggesting its potential impact on microbiology and ecology data analysis.

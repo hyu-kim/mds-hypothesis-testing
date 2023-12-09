@@ -4,13 +4,6 @@ source("permanova_with_config.R")
 
 # Distance between vector
 get_dist_mat <- function(z){
-  # N = dim(z)[1]
-  # z_dist = matrix(0, nrow = N, ncol = N)
-  # for(i in 1:N){
-  #   for(j in 1:N){
-  #     z_dist[i,j] <- sqrt(sum((z[i,] - z[j,])^2))
-  #   }
-  # }
   z_dist <- as.matrix(dist(z))
   return(z_dist)
 }

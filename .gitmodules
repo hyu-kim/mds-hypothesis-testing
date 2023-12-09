@@ -1,0 +1,3 @@
+[submodule "simclr/PopPhy_CNN"]
+	path = simclr/PopPhy_CNN
+	url = https://github.com/YDaiLab/PopPhy-CNN.git
