@@ -43,8 +43,8 @@ Dropout = 0.3
 [SimCLR]
 
 # Dataset hyperparameters
-labeled_dataset_size = 60
-image_width = 42
+labeled_dataset_size = 30
+image_width = 39
 image_height = 10
 image_channels = 1
 

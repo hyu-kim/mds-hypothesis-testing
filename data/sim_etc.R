@@ -4,6 +4,16 @@ library(ggplot2)
 library(grid)
 library(gridExtra)
 
+# function to add ellipse
+add_ellipse <- function(configuration, labels, confidence=0.68){
+  mu1 <- colMeans(configuration[labels==1,])
+  mu2 <- colMeans(configuration[labels==2,])
+  Sigma1 <- cov(configuration[labels==1,])
+  Sigma2 <- cov(configuration[labels==2,])
+  addEllipse(mu1, Sigma1, p.interval = confidence, col = "black", lty = 2)
+  addEllipse(mu2, Sigma2, p.interval = confidence, col = "red", lty = 2)
+}
+
 # Default theme for ggplot2
 theme_set(theme_bw() + 
             theme(legend.position="bottom", 
@@ -39,12 +49,15 @@ get_p(trt = y1, mat = res1$lambda0.3$z)$p # p = 0.001
 setEPS()
 postscript("result/config_site1.eps", width = 6, height = 2.4)
 par(mfrow = c(1, 3))
-plot(zmds1, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y1)])
-plot(res1$lambda0.3$z, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y1)])
-plot(res1$lambda0.5$z, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y1)])
+plot(zmds1, xlab = "X1", ylab = "X2", col = y1, pch=16)
+add_ellipse(zmds1, y1)
+plot(res1$lambda0.3$z, xlab = "X1", ylab = "X2", col = y1, pch=16)
+add_ellipse(res1$lambda0.3$z, y1)
+plot(res1$lambda0.5$z, xlab = "X1", ylab = "X2", col = y1, pch=16)
+add_ellipse(res1$lambda0.5$z, y1)
 dev.off()
 
-pdf("data/result/config_site1.pdf",
+pdf("result/config_site1.pdf",
     width = 9, height = 9)
 par(mfrow = c(2,2))
 plot(zmds1, main = "Pure MDS", col = y1)
@@ -152,9 +165,12 @@ get_p(trt = y2, mat = res2$lambda0.3$z)$p # p = 0.094
 setEPS()
 postscript("result/config_site2.eps", width = 6, height = 2.4)
 par(mfrow = c(1, 3))
-plot(zmds2, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y2)])
-plot(res2$lambda0.3$z, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y2)])
-plot(res2$lambda0.5$z, xlab = "X1", ylab = "X2", pch = c(16,1)[as.numeric(y2)])
+plot(zmds2, xlab = "X1", ylab = "X2", col = y2, pch=16)
+add_ellipse(zmds2, y2)
+plot(res2$lambda0.3$z, xlab = "X1", ylab = "X2", col = y2, pch=16)
+add_ellipse(res2$lambda0.3$z, y2)
+plot(res2$lambda0.5$z, xlab = "X1", ylab = "X2", col = y2, pch=16)
+add_ellipse(res2$lambda0.5$z, y2)
 dev.off()
 
 # PDF
@@ -329,10 +345,14 @@ names(sim_res$proposed) <- c("lambda0.3", "lambda0.5", "lambda0.7")
 # mu <- colMeans(dat)
 # Sigma <- cov(dat)
 # addEllipse(mu, Sigma, p.interval = 0.95, col = "blue", lty = 3)
-pdf("data/result/config_sim.pdf",
-    width = 9, height = 9)
+pdf("result/config_sim.pdf",
+    width = 6, height = 6.5)
 par(mfrow = c(2,2), mar = c(2,2,3,1))
-plot(sim_res$mds, main = "Pure MDS", col = sim_data$data$Y)
+
+# pure MDS
+plot(sim_res$mds, main = "Pure MDS", col = sim_data$data$Y, pch=16)
+add_ellipse(sim_res$mds, sim_data$data$Y)
+
 text(x = (min(sim_res$mds[,1])+
             max(sim_res$mds[,1]))/2 -3, 
      y = max(sim_res$mds[,2]),
@@ -345,7 +365,10 @@ mtext(paste(
   round(sqrt(sum((sim_data$dist - dist(sim_res$mds))^2) /
                sum((dist(sim_res$mds))^2)), 4)), side=3)
 
-plot(sim_res$proposed$lambda0.3$z, main = "lambda = 0.3", col = sim_data$data$Y)
+# lambda 0.3
+plot(sim_res$proposed$lambda0.3$z, main = "lambda = 0.3", col = sim_data$data$Y, pch=16)
+add_ellipse(sim_res$proposed$lambda0.3$z, sim_data$data$Y)
+
 text(x = (min(sim_res$proposed$lambda0.3$z[,1])+
             max(sim_res$proposed$lambda0.3$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.3$z[,2]),
@@ -359,7 +382,10 @@ mtext(paste(
   round(sqrt(sum((sim_data$dist - dist(sim_res$proposed$lambda0.3$z))^2) /
                sum((dist(sim_res$proposed$lambda0.3$z))^2)), 4)), side=3)
 
-plot(sim_res$proposed$lambda0.5$z, main = "lambda = 0.5", col = sim_data$data$Y)
+# lambda 0.5
+plot(sim_res$proposed$lambda0.5$z, main = "lambda = 0.5", col = sim_data$data$Y, pch=16)
+add_ellipse(sim_res$proposed$lambda0.5$z, sim_data$data$Y)
+
 text(x = (min(sim_res$proposed$lambda0.5$z[,1])+
             max(sim_res$proposed$lambda0.5$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.5$z[,2]),
@@ -373,7 +399,10 @@ mtext(paste(
   round(sqrt(sum((sim_data$dist - dist(sim_res$proposed$lambda0.5$z))^2) /
                sum((dist(sim_res$proposed$lambda0.5$z))^2)), 4)), side=3)
 
-plot(sim_res$proposed$lambda0.7$z, main = "lambda = 0.7", col = sim_data$data$Y)
+# lambda 0.7
+plot(sim_res$proposed$lambda0.7$z, main = "lambda = 0.7", col = sim_data$data$Y, pch=16)
+add_ellipse(sim_res$proposed$lambda0.7$z, sim_data$data$Y)
+
 text(x = (min(sim_res$proposed$lambda0.7$z[,1])+
             max(sim_res$proposed$lambda0.7$z[,1]))/2 -3,
      y = max(sim_res$proposed$lambda0.7$z[,2]),
@@ -386,6 +415,7 @@ mtext(paste(
   "Stress1 = ",
   round(sqrt(sum((sim_data$dist - dist(sim_res$proposed$lambda0.7$z))^2) /
                sum((dist(sim_res$proposed$lambda0.7$z))^2)), 4)), side=3)
+
 dev.off()
 
 
