@@ -4,6 +4,13 @@ source("permanova_with_config.R")
 
 # Distance between vector
 get_dist_mat <- function(z){
+  # N = dim(z)[1]
+  # z_dist = matrix(0, nrow = N, ncol = N)
+  # for(i in 1:N){
+  #   for(j in 1:N){
+  #     z_dist[i,j] <- sqrt(sum((z[i,] - z[j,])^2))
+  #   }
+  # }
   z_dist <- as.matrix(dist(z))
   return(z_dist)
 }
@@ -79,18 +86,18 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
   phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
   delta <- conf_obj(y, z0, D)$sign
   z_temp <- z_up <- z0
-  p0 <- get_p(d = D, trt = y)$p
+  F0 <- pseudo_F(d = D, trt = y)$ratio
   for(t in 1:nit){
     obj_conf_up <- conf_obj(y, z_up, D)
     obj_mds_up <- mds_obj(D, z_up)
     obj_up <- lambda*obj_conf_up$val + obj_mds_up
-    p_up <- get_p(mat = z_up, trt = y)$p
+    Fz_up <- pseudo_F(mat = z_up, trt = y)$ratio
     print(paste('epoch', t, 
                 '  total', sprintf(obj_up, fmt = '%#.3f'), 
                 '  mds', sprintf(obj_mds_up, fmt = '%#.3f'), 
                 '  conf', sprintf(obj_conf_up$val, fmt = '%#.3f'),
-                '  p_z', sprintf(p_up, fmt = '%#.2f'),
-                '  p_0', sprintf(p0, fmt = '%#.2f')
+                '  Fz', sprintf(Fz_up, fmt = '%#.2f'),
+                '  F0', sprintf(F0, fmt = '%#.2f')
     ))
     
     for(i in 1:N){
@@ -114,7 +121,7 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
       z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi_up)*lambda*delta)
       z_up[i,] <- z_temp[i,]
       if(i %in% seq(from=10, to = N, by=10)){
-        print(paste("..", i, "of", N, "updated")) ##to check progress
+        print(paste(i, "of", N, "observation updated")) ##to check progress
       }
     }
     # z_up <- z_temp
@@ -123,8 +130,8 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
   
   obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
   obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
-  p_up <- get_p(mat = z_up, trt = y)$p
-  return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f, p_z = p_up, p_0 = p0))
+  Fz_up <- pseudo_F(mat = z_up, trt = y)$ratio
+  return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f, F_z = Fz_up, F_0 = F0))
 }
 
 
@@ -135,8 +142,7 @@ y1s <- read.table('result/labels_site1.txt', sep=',', header=TRUE)
 y2s <- read.table('result/labels_site2.txt', sep=',', header=TRUE)
 y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
-obmm <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,1])
-  # just an example. replace x with any number you want
+obmm_x <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2s[,1])  # just an example. replace x with any number you want
 
 
 # plot
