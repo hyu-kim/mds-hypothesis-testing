@@ -79,18 +79,22 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
   phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
   delta <- conf_obj(y, z0, D)$sign
   z_temp <- z_up <- z0
-  F0 <- pseudo_F(d = D, trt = y)$ratio
+  # F0 <- pseudo_F(d = D, trt = y)$ratio
+  p0 <- get_p(d = D, trt = y)$p
   for(t in 1:nit){
     obj_conf_up <- conf_obj(y, z_up, D)
     obj_mds_up <- mds_obj(D, z_up)
     obj_up <- lambda*obj_conf_up$val + obj_mds_up
-    Fz_up <- pseudo_F(mat = z_up, trt = y)$ratio
+    # Fz_up <- pseudo_F(mat = z_up, trt = y)$ratio
+    p_up <- get_p(mat = z_up, trt = y)$p
     print(paste('epoch', t, 
                 '  total', sprintf(obj_up, fmt = '%#.3f'), 
                 '  mds', sprintf(obj_mds_up, fmt = '%#.3f'), 
                 '  conf', sprintf(obj_conf_up$val, fmt = '%#.3f'),
-                '  Fz', sprintf(Fz_up, fmt = '%#.2f'),
-                '  F0', sprintf(F0, fmt = '%#.2f')
+                # '  Fz', sprintf(Fz_up, fmt = '%#.2f'),
+                # '  F0', sprintf(F0, fmt = '%#.2f')
+                '  p_z', sprintf(p_up, fmt = '%#.2f'),
+                '  p_0', sprintf(p0, fmt = '%#.2f')
     ))
     
     for(i in 1:N){
