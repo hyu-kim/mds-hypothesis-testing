@@ -1,5 +1,6 @@
 library(tsne)
 
+# Site 1
 tsne1 <- list()
 for(perp in c(5:10)){
   tsne1[[perp]] <- tsne(X = dist1, perplexity = perp)
@@ -10,7 +11,7 @@ for(perp in c(5:10)){
   tsne1_dist[[perp]] <- dist(tsne1[[perp]])
 }
 
-
+# Site 2
 tsne2 <- list()
 for(perp in c(5:10)){
   tsne2[[perp]] <- tsne(X = dist2, perplexity = perp)
@@ -19,6 +20,12 @@ for(perp in c(5:10)){
 tsne2_dist <- list()
 for(perp in c(5:10)){
   tsne2_dist[[perp]] <- dist(tsne2[[perp]])
+}
+
+## Cirrhosis and t2d
+for(perp in c(5:10)){
+  cirr_res$tsne[[perp]] <- tsne(X = phyl_unifrac_cirrhosis, perplexity = perp)
+  t2d_res$tsne[[perp]] <- tsne(X = phyl_unifrac_t2d, perplexity = perp)
 }
 
 ### F and p value

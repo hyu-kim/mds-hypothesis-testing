@@ -5,6 +5,26 @@ y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
 
 #### SMDS to our data
+n_smds <- c(0.1, 0.3, 0.5)
+for(i in 1:3){
+  cirr_res$smds[[i]] <- TrainSuperMDS(d = get_dist_mat(phyl_unifrac_cirrhosis), y = cirr_y, alpha = n_smds[i])
+  t2d_res$smds[[i]] <- TrainSuperMDS(d = get_dist_mat(phyl_unifrac_t2d), y = t2d_y, alpha = n_smds[i])
+}
+
+smds_site1 <- list(
+  a.0 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.0),
+  a.1 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.1),
+  a.2 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.2),
+  a.3 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.3),
+  a.4 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.4),
+  a.5 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.5),
+  a.6 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.6),
+  a.7 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.7),
+  a.8 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.8),
+  a.9 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.9),
+  a.10 = TrainSuperMDS(d = distmat1, y = y1, alpha = 1)
+)
+
 smds_site1 <- list(
   a.0 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.0),
   a.1 =  TrainSuperMDS(d = distmat1, y = y1, alpha = 0.1),

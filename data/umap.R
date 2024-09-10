@@ -20,6 +20,16 @@ for(i in 1:4){
   umap2[[i+4]] <- umap(dist2, n_neighbors = n_nbr[i])
 }
 
+for(i in 1:4){
+  cirr_res$umap[[i]] <- umap(phyl_unifrac_cirrhosis, n_neighbors = n_nbr[i], y = factor(cirr_y))
+  cirr_res$umap[[i+4]] <- umap(phyl_unifrac_cirrhosis, n_neighbors = n_nbr[i])
+}
+
+for(i in 1:4){
+  t2d_res$umap[[i]] <- umap(phyl_unifrac_t2d, n_neighbors = n_nbr[i], y = factor(t2d_y))
+  t2d_res$umap[[i+4]] <- umap(phyl_unifrac_t2d, n_neighbors = n_nbr[i])
+}
+
 ### F and p value
 umap1_res <- umap2_res <- data.frame(
   Supervised = c(rep(1, 4), rep(0, 4)),

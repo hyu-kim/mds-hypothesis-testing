@@ -26,35 +26,35 @@ rp_eval2 <- function(nperm, dm, y_orig, emb, y_emb = NULL){
 }
 
 ### Eval
-eval_res2 <- list()
-eval_res2$sim <- list(
-  mds = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$mds),
-  fmds3 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$proposed$lambda0.3$z),
-  fmds5 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$proposed$lambda0.5$z), 
-  fmds7 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$proposed$lambda0.7$z), 
+## Cirrhosis
+cirr_res$mds <- data.frame(cmdscale(phyl_unifrac_cirrhosis, k = 2))
 
-  umap_s5 =  rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$umap[[1]]), 
-  umap_s10 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$umap[[2]]), 
-  umap_s20 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$umap[[3]]), 
-  umap_s30 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$umap[[4]]),
-  umap_u5 =  rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$umap[[5]]), 
-  umap_u10 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$umap[[6]]), 
-  umap_u20 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$umap[[7]]), 
-  umap_u30 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$umap[[8]]),
+eval_res_cirr <- list(
+  mds = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$mds),
+  fmds3 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$fmds$lambda0.3$z),
+  fmds5 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$fmds$lambda0.5$z), 
+  fmds7 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$fmds$lambda0.7$z), 
   
-  tsne5 =  rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$tsne[[1]]),
-  tsne10 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$tsne[[2]]), 
-  tsne20 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$tsne[[3]]), 
-  tsne30 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$tsne[[4]]),
-  iso5 =   rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$isomap[[1]]$points), 
-  iso10 =  rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$isomap[[2]]$points), 
-  iso20 =  rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$isomap[[3]]$points), 
-  iso30 =  rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$isomap[[4]]$points),
+  umap_s5 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$umap[[1]]), 
+  umap_s10 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$umap[[2]]), 
+  umap_s20 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$umap[[3]]), 
+  umap_s30 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$umap[[4]]), 
   
-  smds1 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$smds[[1]]$z),
-  smds3 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$smds[[2]]$z),
-  smds5 = rp_eval2(500, sim_data$distmat, sim_data$data$Y, sim_res$smds[[3]]$z)
+  umap_u5 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$umap[[5]]), 
+  umap_u10 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$umap[[6]]), 
+  umap_u20 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$umap[[7]]), 
+  umap_u30 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$umap[[8]]), 
+  
+  tsne5 =  rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$tsne[[5]]), 
+  tsne7 =  rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$tsne[[7]]), 
+  tsne10 =  rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$tsne[[10]]), 
+  
+  iso5 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$isomap[[5]]$points), 
+  iso7 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$isomap[[7]]$points), 
+  iso10 = rp_eval2(500, phyl_unifrac_cirrhosis, cirr_y, cirr_res$isomap[[10]]$points), 
 )
+
+
 
 # library(superMDS)
 # sim_res$smds <- list(
