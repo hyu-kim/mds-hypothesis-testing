@@ -45,9 +45,10 @@ pair_by_rank <- function(D, z, y, fun){
   mat_pair[,2] <- fz_sorted
   df_pair <- data.frame(data=mat_pair)
   colnames(df_pair) <- c('F0','Fz')
-  loess_f <- loess(Fz ~ F0, data=df_pair, span=0.10,
-                   control=loess.control(surface="direct"))
-  return(list(pair=mat_pair, model=loess_f))
+  # loess_f <- loess(Fz ~ F0, data=df_pair, span=0.10,
+  #                  control=loess.control(surface="direct"))
+  # return(list(pair=mat_pair, model=loess_f))
+  return(list(pair=mat_pair))
 }
 
 
@@ -63,9 +64,12 @@ conf_obj <- function(y, z, D){
   z_distmat <- get_dist_mat(z)
   y_indmat <- get_ind_mat(y)
   phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
-  f_loess <- pair_by_rank(D=D, z=z, y=y, fun=get_phi)$model
-  phi_up <- predict(f_loess, phi)  # perform loess for accurate F mapping
-  val <- (1-(1+phi_up)*y_indmat) * z_distmat^2
+  list_pair <- pair_by_rank(D=D, z=z, y=y, fun=get_phi)$pair # _0, _z
+  ind_phi <- which.min(abs(phi - list_pair[,1]))[1]
+  phi_pred <- list_pair[,2][ind_phi]
+  # f_loess <- pair_by_rank(D=D, z=z, y=y, fun=get_phi)$model
+  # phi_pred <- predict(f_loess, phi)  # perform loess for accurate F mapping
+  val <- (1-(1+phi_pred)*y_indmat) * z_distmat^2
   res <- 0.5 * abs(sum(val))
   return(list(val = res, sign = sign(sum(val))))
 }
@@ -96,16 +100,20 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
                 '  p_z', sprintf(p_up, fmt = '%#.2f'),
                 '  p_0', sprintf(p0, fmt = '%#.2f')
     ))
-    
+      
     for(i in 1:N){
       if(lambda==0){
-        phi_up <- phi
+        phi_pred <- phi
       } else {
-        f_loess <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$model
-        phi_up <- predict(f_loess, phi)  # perform loess for accurate F mapping
+        # f_loess <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$model
+        # phi_pred <- predict(f_loess, phi)  # perform loess for accurate F mapping
+        list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$pair # _0, _z
+        ind_phi <- which.min(abs(phi - list_pair[,1]))[1]
+        phi_pred <- list_pair[,2][ind_phi]
       }
       
-      delta <- conf_obj(y, z_up, D)$sign
+      delta <- sign(get_phi(mat=z_up, trt=y)$ratio - phi_pred)
+      # delta <- conf_obj(y, z_up, D)$sign
       
       z_distmat <- as.matrix(dist(z_up))  # (N,N)
       coeff <- D/z_distmat  # final term in the update
@@ -113,21 +121,22 @@ mm_cmds <- function(nit = 100, conv_crit = 5e-03, lambda = 0.2,
       z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
       
       z_temp[i,] <- (1+lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)-z_up[i,]) +
-        (1-lambda*phi_up*delta) * (apply(z_up[y==y[i],], 2, sum)-z_up[i,]) +
+        (1-lambda*phi_pred*delta) * (apply(z_up[y==y[i],], 2, sum)-z_up[i,]) +
         apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
-      z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi_up)*lambda*delta)
-      z_up[i,] <- z_temp[i,]
+      z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi_pred)*lambda*delta)
+      # z_up[i,] <- z_temp[i,]
       if(i %in% seq(from=10, to = N, by=10)){
         print(paste(i, "of", N, "observation updated")) ##to check progress
       }
     }
-    # z_up <- z_temp
+    z_up <- z_temp
     # print(z_up)
   }
   
   obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
   obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
   Fz_up <- pseudo_F(mat = z_up, trt = y)$ratio
+  F0 <- pseudo_F(d = D, trt = y)$ratio
   return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f, F_z = Fz_up, F_0 = F0))
 }
 
@@ -137,7 +146,8 @@ zmds1 <- ordu1$vectors[,1:2]
 zmds2 <- ordu2$vectors[,1:2]
 y1 <- ifelse(site1@sam_data$Treatment == "Pt +", 1, 2)
 y2 <- ifelse(site2@sam_data$Treatment == "Pt +", 1, 2)
-obmm_x <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2)  # just an example. replace x with any number you want
+obmm_x <- mm_cmds(nit=15, lambda=0.3, z0=zmds2, D=distmat2, y=y2)  
+  # just an example. replace x with any number you want
 
 
 # plot
