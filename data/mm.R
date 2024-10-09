@@ -56,8 +56,9 @@ conf_obj <- function(y, z, D){
   phi_pred <- list_pair[,2][ind_phi]
   # f_loess <- pair_by_rank(D=D, z=z, y=y, fun=get_phi)$model
   # phi_pred <- predict(f_loess, phi)  # perform loess for accurate F mapping
-  val <- (1-(1+phi_pred)*y_indmat) * z_distmat^2
-  res <- 0.5 * abs(sum(val))
+  # val <- (1-(1+phi_pred)*y_indmat) * z_distmat^2
+  val <- (1 - 2*(1+phi_pred)*y_indmat) * z_distmat^2
+  res <- abs(sum(val))
   return(list(val = res, sign = sign(sum(val))))
 }
 
@@ -93,8 +94,6 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
                 '  total', sprintf(obj_up, fmt = '%#.2f'), 
                 '  mds', sprintf(obj_mds_up, fmt = '%#.2f'), 
                 '  conf', sprintf(obj_conf_up$val, fmt = '%#.2f'),
-                # '  Fz', sprintf(Fz_up, fmt = '%#.2f'),
-                # '  F0', sprintf(F0, fmt = '%#.2f')
                 '  p_z', sprintf(p_up, fmt = '%#.3f'),
                 '  p_0', sprintf(p0, fmt = '%#.3f')
     ))
@@ -111,34 +110,19 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
       phi_pred <- list_pair[,2][ind_phi]
     }
       
+    delta <- sign(get_phi(mat=z_up, trt=y) - phi_pred)
+    
     for(i in 1:N){
-      # print(paste('i=', i, Sys.time()))
-      # if(lambda==0){
-      #   phi_pred <- phi
-      # } else {
-      #   # f_loess <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$model
-      #   # phi_pred <- predict(f_loess, phi)  # perform loess for accurate F mapping
-      #   list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$pair # _0, _z
-      #   ind_phi <- which.min(abs(phi - list_pair[,1]))[1]
-      #   phi_pred <- list_pair[,2][ind_phi]
-      # }
-      
-      delta <- sign(get_phi(mat=z_up, trt=y) - phi_pred)
-      # delta <- conf_obj(y, z_up, D)$sign
-      
       z_distmat <- as.matrix(dist(z_up))  # (N,N)
       coeff <- D/z_distmat  # final term in the update
       coeff[is.nan(coeff)] <- 0
       z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
       
-      z_temp[i,] <- (1+lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)-z_up[i,]) +
-        (1-lambda*phi_pred*delta) * (apply(z_up[y==y[i],], 2, sum)-z_up[i,]) +
+      z_temp[i,] <- (1+lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)) +
+        (1-lambda*delta*(1+2*phi_pred)) * (apply(z_up[y==y[i],], 2, sum)) +
         apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
-      z_temp[i,] <- z_temp[i,] / (N-1 + 0.5*(N-(N-2)*phi_pred)*lambda*delta)
-      # z_up[i,] <- z_temp[i,]
-      # if(i %in% seq(from=10, to = N, by=10)){
-      #   print(paste(i, "of", N, "observation updated")) ##to check progress
-      # }
+      
+      z_temp[i,] <- z_temp[i,] / (N - N*phi_pred*lambda*delta)
     } # end z_temp
     
     z_prev <- z_up
