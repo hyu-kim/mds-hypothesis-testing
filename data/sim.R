@@ -30,4 +30,11 @@ res <- pbmclapply(1:21, function(i){
          )
 }, mc.cores = 128)
 
+# lambda-free
+source('mm.R')
+print('lambda-free method')
+model_loess <- readRDS('result/HyperparameterStudy/Nonparametric/model_loess.Rds')
+res <- mm_cmds2(nit=200, z0=z0, D=sim_data$distmat, y = sim_data$Y, 
+                dataset = 'sim', model_lambda=model_loess)
+
 write.csv(data.frame(n_iter=200, dataset='sim'), 'result/sim-config.csv', row.names=FALSE)

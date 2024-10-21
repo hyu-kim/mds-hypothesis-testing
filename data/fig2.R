@@ -1,31 +1,6 @@
 library(ggplot2)
 library('dplyr')
-
-## functions
-# Distance matrix
-get_dist_mat <- function(z){
-  z_dist <- dist(z)
-  return(z_dist)
-}
-
-# Stress-1
-get_stress <- function(x_dist, z_dist){
-  res <- sqrt(sum((x_dist - z_dist)^2) / sum(z_dist^2))
-  return(res)
-}
-
-# Raw Stress
-get_stress_raw <- function(x_dist, z_dist){
-  res <- sum((x_dist - z_dist)^2)
-  return(res)
-}
-
-# Pearson correlation
-get_pearson_corr <- function(x_dist, z_dist){
-  res <- cov(x_dist, z_dist) / (sd(x_dist) * sd(z_dist))
-  return(res)
-}
-
+source('fig_util.R')
 
 ## import and process
 # v_lambda = (0:20)/20
@@ -142,7 +117,7 @@ ggplot(data=df_eval_stat) +
         axis.text.x = element_text(size=8, colour='black'),
         axis.text.y = element_text(size=8, colour='black'),
         axis.line = element_blank(),
-        axis.ticks = element_line(linewidth=0.5)
+        axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
 ggsave('result/fig2C.pdf', width=1.6, height=1.55, units='in')

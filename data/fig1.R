@@ -68,7 +68,7 @@ g +
         axis.text.x = element_text(size=8, colour='black'),
         axis.text.y = element_text(size=8, colour='black'),
         axis.line = element_blank(),
-        axis.ticks = element_line(linewidth=0.5)
+        axis.ticks = element_line(linewidth=0.25, colour = 'black')
         )
 
 ggsave('result/fig1_p.pdf', width=2.15, height=3, units='in')
