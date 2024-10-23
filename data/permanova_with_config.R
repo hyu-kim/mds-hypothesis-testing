@@ -39,11 +39,16 @@ get_p <- function(mat=NULL, d=NULL, trt, n_iter=999, fun=pseudo_F){
   f_permuted = matrix(0, nrow=n_iter, ncol=1)  # pseudo-F only
   # iterate to get pseudo F
   N <- length(trt)
+  a <- length(unique(trt))
   tbl <- table(trt)
   for (iter in 1:n_iter){
-    ind_rand <- sample(1:N, tbl[2], replace=F)
     y_rand <- rep(1,N)
-    y_rand[ind_rand] = 2
+    pool_v <- 1:N
+    for(cl in 2:a){
+      ind_rand <- sample(pool_v, tbl[cl], replace=F)
+      y_rand[ind_rand] = cl
+      pool_v <- setdiff(pool_v, ind_rand)
+    }
     f_permuted[iter,1] = fun(mat=mat, d = d, trt = y_rand)
   }
   # compute p value

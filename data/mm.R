@@ -9,19 +9,6 @@ get_dist_mat <- function(z){
 }
 
 
-# compute phi (ratio)
-get_phi <- function(mat=NULL, d=NULL, trt){
-  if(is.null(d)){
-    d <- as.matrix(dist(mat))
-  } else {
-    d <- as.matrix(d)
-  }
-  y_indmat <- get_ind_mat(trt)
-  phi <- sum((1-y_indmat) * d*d) / sum(y_indmat * d*d)
-  return(phi)
-}
-
-
 # local regression on one-on-one paired by p value
 pair_by_rank <- function(D, z, y, fun){
   f0_sorted <- get_p(d=D, trt=y, fun=fun)$ratio_all
@@ -32,9 +19,6 @@ pair_by_rank <- function(D, z, y, fun){
   mat_pair[,2] <- fz_sorted
   df_pair <- data.frame(data=mat_pair)
   colnames(df_pair) <- c('F0','Fz')
-  # loess_f <- loess(Fz ~ F0, data=df_pair, span=0.10,
-  #                  control=loess.control(surface="direct"))
-  # return(list(pair=mat_pair, model=loess_f))
   return(list(pair=mat_pair))
 }
 
@@ -59,16 +43,15 @@ mds_obj <- function(D, z){
 
 # confirmatory objective term with labels
 conf_obj <- function(y, z, D){
+  N <- length(y)
+  a <- length(unique(y))
   z_distmat <- get_dist_mat(z)
   y_indmat <- get_ind_mat(y)
-  phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
-  list_pair <- pair_by_rank(D=D, z=z, y=y, fun=get_phi)$pair # _0, _z
-  ind_phi <- which.min(abs(phi - list_pair[,1]))[1]
-  phi_pred <- list_pair[,2][ind_phi]
-  # f_loess <- pair_by_rank(D=D, z=z, y=y, fun=get_phi)$model
-  # phi_pred <- predict(f_loess, phi)  # perform loess for accurate F mapping
-  # val <- (1-(1+phi_pred)*y_indmat) * z_distmat^2
-  val <- (1 - 2*(1+phi_pred)*y_indmat) * z_distmat^2
+  f_ratio <- pseudo_F(d = D, trt = y)
+  list_pair <- pair_by_rank(D=D, z=z, y=y, fun=pseudo_F)$pair # _0, _z
+  ind_f_ratio <- which.min(abs(f_ratio - list_pair[,1]))[1]
+  f_ratio_pred <- list_pair[,2][ind_f_ratio]
+  val <- (1 - a * y_indmat * (1 + f_ratio_pred*(a-1)/(N-a))) * z_distmat^2
   res <- abs(sum(val))
   return(list(val = res, sign = sign(sum(val))))
 }
@@ -77,11 +60,10 @@ conf_obj <- function(y, z, D){
 mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   N <- dim(z0)[1]
   S <- dim(z0)[2]
+  a <- length(unique(y))
   y_indmat <- get_ind_mat(y)
-  phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
-  # delta <- conf_obj(y, z0, D)$sign
+  f_ratio <- pseudo_F(mat=z, d = D, trt = y)
   z_temp <- z_up <- z0
-  # F0 <- pseudo_F(d = D, trt = y)$ratio
   p0 <- get_p(d = D, trt = y)$p
   log_iter_mat <- matrix(0, nrow=0, ncol=6)
   colnames(log_iter_mat) <- c('epoch', 'obj', 'obj_mds', 'obj_confr', 'p_z', 'p_0')
@@ -89,9 +71,6 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   p_prev <- 1
   
   for(t in 0:nit){
-    obj_conf_up <- conf_obj(y, z_up, D)
-    obj_mds_up <- mds_obj(D, z_up)
-    obj_up <- lambda*obj_conf_up$val + obj_mds_up
     p_up <- get_p(mat = z_up, trt = y)$p
     
     if((abs(p_up-p0) > abs(p_prev-p0)) & (abs(p_prev-p0)<=0.05)){
@@ -100,28 +79,35 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
       break
     }
     
+    if(lambda==0){
+      f_ratio_pred <- f_ratio
+    } else {
+      list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=pseudo_F)$pair # _0, _z
+      ind_f_ratio <- which.min(abs(f_ratio - list_pair[,1]))[1]
+      f_ratio_pred <- list_pair[,2][ind_f_ratio]
+    }
+      
+    # delta <- sign(pseudo_F(mat=z_up, trt=y) - f_ratio_pred)
+    z_distmat <- as.matrix(dist(z_up))
+    f_diff_nominator <- sum((1 - a * y_indmat * (1+f_ratio_pred*(a-1)/(N-a))) * z_distmat^2)
+    delta <- sign(f_diff_nominator)
+    obj_conf <- abs(f_diff_nominator)
+    obj_mds <- mds_obj(D, z_up)
+    obj <- lambda*obj_conf + obj_mds
+    
     print(paste('epoch', t, 
                 '  lambda', lambda,
-                '  total', sprintf(obj_up, fmt = '%#.2f'), 
-                '  mds', sprintf(obj_mds_up, fmt = '%#.2f'), 
-                '  conf', sprintf(obj_conf_up$val, fmt = '%#.2f'),
+                '  total', sprintf(obj, fmt = '%#.2f'), 
+                '  mds', sprintf(obj_mds, fmt = '%#.2f'), 
+                '  conf', sprintf(obj_conf, fmt = '%#.2f'),
                 '  p_z', sprintf(p_up, fmt = '%#.3f'),
                 '  p_0', sprintf(p0, fmt = '%#.3f')
     ))
     log_iter_mat <- rbind(log_iter_mat, 
-                          c(t, obj_up, obj_mds_up, obj_conf_up$val, p_up, p0))
+                          c(t, obj, obj_mds, obj_conf, p_up, p0))
     # write.csv(log_iter_mat, sprintf('result/inProg/%s-%.2f-log.csv', dataset, lambda), row.names = FALSE)
     # write.csv(z_up, sprintf('result/inProg/%s-%.2f-Z.csv', dataset, lambda), row.names = FALSE)
     
-    if(lambda==0){
-      phi_pred <- phi
-    } else {
-      list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$pair # _0, _z
-      ind_phi <- which.min(abs(phi - list_pair[,1]))[1]
-      phi_pred <- list_pair[,2][ind_phi]
-    }
-      
-    delta <- sign(get_phi(mat=z_up, trt=y) - phi_pred)
     
     for(i in 1:N){
       z_distmat <- as.matrix(dist(z_up))  # (N,N)
@@ -130,10 +116,10 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
       z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
       
       z_temp[i,] <- (1+lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)) +
-        (1-lambda*delta*(1+2*phi_pred)) * (apply(z_up[y==y[i],], 2, sum)) +
+        (1-lambda*delta*(1+2*f_ratio_pred/(N-2))) * (apply(z_up[y==y[i],], 2, sum)) +
         apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
       
-      z_temp[i,] <- z_temp[i,] / (N - N*phi_pred*lambda*delta)
+      z_temp[i,] <- z_temp[i,] / (N - N*lambda*delta*f_ratio_pred/(N-2))
     } # end z_temp
     
     z_prev <- z_up
@@ -142,85 +128,16 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
     z_up <- z_temp
   } # end iteration
   
-  obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
-  obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
+  # obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
+  # obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
   Fz_up <- pseudo_F(mat = z_up, trt = y)
   F0 <- pseudo_F(d = D, trt = y)
-  write.csv(log_iter_mat, sprintf('result/HyperparameterStudy/%s/%s-fmds-%.2f-log.csv', dataset,dataset, lambda), row.names = FALSE)
-  write.csv(z_up, sprintf('result/HyperparameterStudy/%s/%s-fmds-%.2f-Z.csv', dataset,dataset, lambda), row.names=FALSE)
+  write.csv(log_iter_mat, sprintf('result/Multiclass/%s-fmds-%.2f-log.csv', 
+                                  dataset, lambda), row.names = FALSE)
+  write.csv(z_up, sprintf('result/Multiclass/%s-fmds-%.2f-Z.csv', 
+                          dataset, lambda), row.names=FALSE)
   
-  return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f, F_z = Fz_up, F_0 = F0))
-}
-
-
-mm_cmds2 <- function(nit = 100, z0, D, y, dataset = 'example', model_lambda=model_out){
-  N <- dim(z0)[1]
-  S <- dim(z0)[2]
-  y_indmat <- get_ind_mat(y)
-  phi <- sum((1-y_indmat) * D*D) / sum(y_indmat * D*D)
-  z_temp <- z_up <- z0
-  p0 <- get_p(d = D, trt = y)$p
-  log_iter_mat <- matrix(0, nrow=0, ncol=6)
-  colnames(log_iter_mat) <- c('epoch', 'obj', 'obj_mds', 'obj_confr', 'p_z', 'p_0')
-  p_prev <- 1
-  lambda_0 <- 0.5
-  
-  for(t in 0:nit){
-    p_up <- get_p(mat = z_up, trt = y)$p
-    lambda <- get_lambda(p=p_up, p_diff=p_up-p0, model_lambda=model_lambda)
-    obj_conf_up <- conf_obj(y, z_up, D)
-    obj_mds_up <- mds_obj(D, z_up)
-    obj_up <- lambda*obj_conf_up$val + obj_mds_up
-    
-    if((abs(p_up-p0) > abs(p_prev-p0)) & (abs(p_prev-p0)<=0.01)){
-      print(sprintf('Lambda %.2f ...halt iteration', lambda))
-      z_up <- z_prev # revert to prev
-      break
-    }
-    
-    print(paste('epoch', t, 
-                '  lambda', lambda,
-                '  total', sprintf(obj_up, fmt = '%#.2f'), 
-                '  mds', sprintf(obj_mds_up, fmt = '%#.2f'), 
-                '  conf', sprintf(obj_conf_up$val, fmt = '%#.2f'),
-                '  p_z', sprintf(p_up, fmt = '%#.3f'),
-                '  p_0', sprintf(p0, fmt = '%#.3f')
-    ))
-    log_iter_mat <- rbind(log_iter_mat, 
-                          c(t, obj_up, obj_mds_up, obj_conf_up$val, p_up, p0))
-
-    if(lambda==0){
-      phi_pred <- phi
-    } else {
-      list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=get_phi)$pair # _0, _z
-      ind_phi <- which.min(abs(phi - list_pair[,1]))[1]
-      phi_pred <- list_pair[,2][ind_phi]
-    }
-    
-    delta <- sign(get_phi(mat=z_up, trt=y) - phi_pred)
-    
-    for(i in 1:N){
-      z_distmat <- as.matrix(dist(z_up))  # (N,N)
-      coeff <- D/z_distmat  # final term in the update
-      coeff[is.nan(coeff)] <- 0
-      z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
-      
-      z_temp[i,] <- (1+lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)) +
-        (1-lambda*delta*(1+2*phi_pred)) * (apply(z_up[y==y[i],], 2, sum)) +
-        apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
-      
-      z_temp[i,] <- z_temp[i,] / (N - N*phi_pred*lambda*delta)
-    } # end z_temp
-    
-    z_prev <- z_up
-    p_prev <- p_up
-    z_up <- z_temp
-  } # end iteration
-  
-  obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
-  obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
-  Fz_up <- pseudo_F(mat = z_up, trt = y)
-  F0 <- pseudo_F(d = D, trt = y)
-
-  return(list(z = z_up, obj_0 = obj_0, obj_f = obj_f, F_z = Fz_up, F_0 = F0))
+  return(list(z = z_up, 
+              # obj_0 = obj_0, obj_f = obj_f, 
+              F_z = Fz_up, F_0 = F0))
 }

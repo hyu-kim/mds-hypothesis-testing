@@ -8,14 +8,15 @@ params2_v <- c(5, 10, 20, 30)
 eval_df <- data.frame(matrix(ncol=6, nrow=0))
 colnames(eval_df) <- c('method', 'hyperparameter', 'stress', 'corr_dist', 'p_ratio', 'corr_f')
 
-sim_data <- readRDS('result/Evaluation/sim-data.rds')
+sim_data <- as.matrix(read.csv('result/Evaluation/sim_1-data.csv'))
+y_sim <- as.matrix(read.csv('result/Evaluation/sim_1-Y.csv'))
 
 for(m in method_v){
   if(m=='mds'){
-    z_embed <- read.csv('result/Evaluation/sim-mds-Z.csv')
-    res <- rp_eval2(dm=sim_data$distmat, y_orig=sim_data$data$Y, z_emb=z_embed)
-    s <- get_stress(x_dist=sim_data$dist, z_dist=dist(z_embed))
-    corr_dist <- get_pearson_corr(x_dist=sim_data$dist, z_dist=dist(z_embed))
+    z_embed <- read.csv('result/Evaluation/sim_1-mds-Z.csv')
+    res <- rp_eval2(dm=as.matrix(dist(sim_data)), y_orig=y_sim, z_emb=z_embed)
+    s <- get_stress(x_dist=dist(sim_data), z_dist=dist(z_embed))
+    corr_dist <- get_pearson_corr(x_dist=dist(sim_data), z_dist=dist(z_embed))
     eval_df[nrow(eval_df)+1,] <- list(m, p, s, corr_dist, res$q, res$rho)
     next
   }
@@ -23,11 +24,11 @@ for(m in method_v){
   for(p in params_v){
     z_embed <- 
       if(m=='fmds' | m=='smds'){
-        read.csv(sprintf('result/Evaluation/sim-%s-%.2f-Z.csv', m, p))
-      } else read.csv(sprintf('result/Evaluation/sim-%s-%02d-Z.csv', m, p))
-    res <- rp_eval2(dm=sim_data$distmat, y_orig=sim_data$data$Y, z_emb=z_embed)
-    s <- get_stress(x_dist=sim_data$dist, z_dist=dist(z_embed))
-    corr_dist <- get_pearson_corr(x_dist=sim_data$dist, z_dist=dist(z_embed))
+        read.csv(sprintf('result/Evaluation/sim_1-%s-%.2f-Z.csv', m, p))
+      } else read.csv(sprintf('result/Evaluation/sim_1-%s-%02d-Z.csv', m, p))
+    res <- rp_eval2(dm=as.matrix(dist(sim_data)), y_orig=y_sim, z_emb=z_embed)
+    s <- get_stress(x_dist=dist(sim_data), z_dist=dist(z_embed))
+    corr_dist <- get_pearson_corr(x_dist=dist(sim_data), z_dist=dist(z_embed))
     eval_df[nrow(eval_df)+1,] <- list(m, p, s, corr_dist, res$q, res$rho)
   }
 }
