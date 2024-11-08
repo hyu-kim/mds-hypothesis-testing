@@ -73,7 +73,7 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   for(t in 0:nit){
     p_up <- get_p(mat = z_up, trt = y)$p
     
-    if((abs(p_up-p0) > abs(p_prev-p0)) & (abs(p_prev-p0)<=0.05)){
+    if((abs(p_up-p0) > abs(p_prev-p0)) & (abs(p_prev-p0)<=0.01)){
       print(sprintf('Lambda %.2f ...halt iteration', lambda))
       z_up <- z_prev # revert to prev
       break
@@ -87,7 +87,6 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
       f_ratio_pred <- list_pair[,2][ind_f_ratio]
     }
       
-    # delta <- sign(pseudo_F(mat=z_up, trt=y) - f_ratio_pred)
     z_distmat <- as.matrix(dist(z_up))
     f_diff_nominator <- sum((1 - a * y_indmat * (1+f_ratio_pred*(a-1)/(N-a))) * z_distmat^2)
     delta <- sign(f_diff_nominator)
@@ -105,8 +104,6 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
     ))
     log_iter_mat <- rbind(log_iter_mat, 
                           c(t, obj, obj_mds, obj_conf, p_up, p0))
-    # write.csv(log_iter_mat, sprintf('result/inProg/%s-%.2f-log.csv', dataset, lambda), row.names = FALSE)
-    # write.csv(z_up, sprintf('result/inProg/%s-%.2f-Z.csv', dataset, lambda), row.names = FALSE)
     
     
     for(i in 1:N){
@@ -128,13 +125,11 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
     z_up <- z_temp
   } # end iteration
   
-  # obj_0 <- conf_obj(y, z0, D)$val + lambda*mds_obj(D, z0)
-  # obj_f <- conf_obj(y, z_up, D)$val + lambda*mds_obj(D, z_up)
   Fz_up <- pseudo_F(mat = z_up, trt = y)
   F0 <- pseudo_F(d = D, trt = y)
-  write.csv(log_iter_mat, sprintf('result/Multiclass/%s-fmds-%.2f-log.csv', 
+  write.csv(log_iter_mat, sprintf('result/HyperparameterStudy/iter_200/%s-fmds-%.2f-log.csv', 
                                   dataset, lambda), row.names = FALSE)
-  write.csv(z_up, sprintf('result/Multiclass/%s-fmds-%.2f-Z.csv', 
+  write.csv(z_up, sprintf('result/HyperparameterStudy/iter_200/%s-fmds-%.2f-Z.csv', 
                           dataset, lambda), row.names=FALSE)
   
   return(list(z = z_up, 

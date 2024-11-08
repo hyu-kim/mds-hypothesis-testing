@@ -2,7 +2,7 @@ library(ggplot2)
 source('fig_util.R')
 
 method_v <- c('fmds', 'mds', 'smds', 'umap_s', 'umap_u', 'tsne', 'iso')
-params1_v <- (1:4)/4
+params1_v <- (1:4)/5
 params2_v <- c(5, 10, 20, 30)
 
 eval_df <- data.frame(matrix(ncol=6, nrow=0))
@@ -61,7 +61,7 @@ ggplot(data=eval_df) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave('result/fig3A.pdf', width=2.1, height=2, units='in')
+ggsave('figures/fig3A.pdf', width=2.1, height=2, units='in')
 
 
 # Panel B: p_ratio v. corr_f
@@ -91,4 +91,4 @@ ggplot(data=eval_df) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave('result/fig3B.pdf', width=3, height=2, units='in')
+ggsave('figures/fig3B.pdf', width=3, height=2, units='in')

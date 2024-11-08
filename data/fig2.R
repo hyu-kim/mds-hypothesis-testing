@@ -2,6 +2,19 @@ library(ggplot2)
 library('dplyr')
 source('fig_util.R')
 
+# custom plot option
+myplot <- function(x, y, ...){
+  plot(x, y, xlab = "", ylab = "", xaxt = 'n', yaxt ='n',
+       col = alpha("black", 0.15), 
+       xlim = c(0, 0.9), ylim = c(0, 0.9),
+       pch=16, cex=0.3, cex.axis=1, 
+       tcl=-0.2, lwd=0.5, ...
+  )
+  axis(side=1, lwd=0.5, tck=-0.05)
+  axis(side=2, lwd=0.5, tck=-0.05, las=2)
+}
+
+
 ## import and process
 # v_lambda = (0:20)/20
 v_lambda2 = (0:5)/5
@@ -11,10 +24,10 @@ colnames(df_eval) <- c('method', 'rep', 'lambda', 'stress', 'stress_raw', 'pears
 for(rep in 1:3){
   for(lambda in v_lambda2){ # FMDS
     # lambda <- v_lambda[i]
-    z_lambda_df <- read.csv(paste('result/HyperparameterStudy/iter_50-', rep, '/sim-', 
-                                  sprintf('%.2f',lambda), '-Z.csv', sep=''))
-    y_df <- read.csv(paste('result/HyperparameterStudy/iter_50-', rep, '/sim-Y.csv', sep=''))
-    x_df <- read.csv(paste('result/HyperparameterStudy/iter_50-', rep, '/sim-data.csv', sep=''))
+    z_lambda_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d/sim_%d-fmds-%.2f-Z.csv', rep, rep, lambda))
+      # read.csv(paste('result/HyperparameterStudy/sim_', rep, '/sim-', sprintf('%.2f',lambda), '-Z.csv', sep=''))
+    y_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d-Y.csv', rep, rep))
+    x_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d-data.csv', rep, rep))
     x_dist <- get_dist_mat(x_df)
     z_dist <- get_dist_mat(z_lambda_df)
     stress_lambda <- get_stress(x_dist, z_dist)
@@ -24,7 +37,7 @@ for(rep in 1:3){
   }
   
   for(lambda in v_lambda2){ # SMDS
-    z_lambda_df <- read.csv(sprintf('result/HyperparameterStudy/SMDS/smds_sim-%.2f-Z-%d.csv',lambda, rep))
+    z_lambda_df <- read.csv(sprintf('result/HyperparameterStudy/SMDS/sim_%d-smds-%.2f-Z.csv',rep,lambda))
     x_dist <- get_dist_mat(x_df)
     z_dist <- get_dist_mat(z_lambda_df)
     stress_lambda <- get_stress(x_dist, z_dist)
@@ -66,7 +79,7 @@ ggplot(data=df_eval_stat) +
         axis.ticks = element_line(linewidth=0.5)
   )
 
-ggsave('result/fig2A.pdf', width=1.6, height=1.55, units='in')
+ggsave('figures/fig2A.pdf', width=1.6, height=1.55, units='in')
 
 
 ## B. Lambda vs Stress-1
@@ -92,18 +105,18 @@ ggplot(data=df_eval_stat) +
         axis.ticks = element_line(linewidth=0.5)
   )
 
-ggsave('result/fig2B.pdf', width=1.6, height=1.55, units='in')
+ggsave('figures/fig2B.pdf', width=1.6, height=1.55, units='in')
 
 
 ## C. Lambda v raw stress
 stress_raw_max <- max(df_eval$stress_raw)
 ggplot(data=df_eval_stat) +
-  geom_point(aes(x=lambda, y=stress_raw_mean/stress_raw_max, shape=method), size=1.5, stroke=0.25) +
-  geom_errorbar(aes(x=lambda, ymin=(stress_raw_mean-stress_raw_std)/stress_raw_max, 
-                    ymax=(stress_raw_mean+stress_raw_std)/stress_raw_max),
+  geom_point(aes(x=lambda, y=stress_raw_mean/1, shape=method), size=1.5, stroke=0.25) +
+  geom_errorbar(aes(x=lambda, ymin=(stress_raw_mean-stress_raw_std)/1, 
+                    ymax=(stress_raw_mean+stress_raw_std)/1),
                 width=0.05, color='black', size=0.25) +
   scale_shape_manual(values=c(1,2)) +
-  scale_y_continuous(limits=c(0,1), breaks = (0:5)/5) +
+  # scale_y_continuous(limits=c(0,1), breaks = (0:5)/5) +
   scale_x_continuous(breaks = (0:5)/5) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
@@ -120,30 +133,18 @@ ggplot(data=df_eval_stat) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave('result/fig2C.pdf', width=1.6, height=1.55, units='in')
+ggsave('figures/fig2C.pdf', width=1.6, height=1.55, units='in')
 
 
 ## D. Shepard plot
-x_dist <- get_dist_mat(read.csv('result/HyperparameterStudy/iter_50-1/sim-data.csv'))
-z_dist_fmds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/iter_50-1/sim-0.00-Z.csv'))
-z_dist_fmds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/iter_50-1/sim-0.60-Z.csv'))
-z_dist_smds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/smds_sim-0.00-Z-1.csv'))
-z_dist_smds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/smds_sim-0.60-Z-1.csv'))
+x_dist <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1-data.csv'))
+z_dist_fmds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1/sim_1-fmds-0.00-Z.csv'))
+z_dist_fmds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1/sim_1-fmds-0.60-Z.csv'))
+z_dist_smds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/sim_1-smds-0.00-Z.csv'))
+z_dist_smds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/sim_1-smds-0.60-Z.csv'))
 
 
-# custom plot option
-myplot <- function(x, y, ...){
-  plot(x, y, xlab = "", ylab = "", xaxt = 'n', yaxt ='n',
-       col = alpha("black", 0.15), 
-       xlim = c(0, 10), ylim = c(0, 10), 
-       pch=16, cex=0.3, cex.axis=1, 
-       tcl=-0.2, lwd=0.5, ...
-  )
-  axis(side=1, lwd=0.5, tck=-0.05)
-  axis(side=2, lwd=0.5, tck=-0.05, las=2)
-}
-
-pdf("result/fig2D.pdf", width = 5.1, height = 1.1)
+pdf("figures/fig2D.pdf", width = 5.1, height = 1.1)
 par(mfrow = c(1, 4), mar = c(1.5,3,0.2,0.2), mgp = c(0,0.6,0), lwd=0.75)
 myplot(x_dist, z_dist_fmds_p0)
 myplot(x_dist, z_dist_smds_p0)

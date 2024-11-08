@@ -1,27 +1,22 @@
 ### Isomap
 library(vegan)
-isomap1 <- list(
-  isomap(dist = dist1, ndim = 2, k = 5),
-  isomap(dist = dist1, ndim = 2, k = 7),
-  isomap(dist = dist1, ndim = 2, k = 10))
-plot(isomap1[[3]]$points)
 
-isomap2 <- list(
-  isomap(dist = dist2, ndim = 2, k = 5),
-  isomap(dist = dist2, ndim = 2, k = 7),
-  isomap(dist = dist2, ndim = 2, k = 10))
-plot(isomap2[[3]]$points)
+# simulated dataset 1
+data_df <- as.matrix(read.csv(sprintf('result/Evaluation/sim_1-data.csv')))
+dist_mat <- dist(data_df[,1:4])
 
-sim_res$isomap <- list(
-  isomap(dist = sim_data$dist, ndim = 2, k = 5),
-  isomap(dist = sim_data$dist, ndim = 2, k = 10),
-  isomap(dist = sim_data$dist, ndim = 2, k = 20),
-  isomap(dist = sim_data$dist, ndim = 2, k = 30)
-  )
+for(k in c(5,10,20,30)){
+  res <- isomap(dist = dist_mat, ndim = 2, k = k)$points
+  write.csv(res, sprintf('result/Evaluation/sim_1-iso-%02d-Z.csv',k), row.names=FALSE)
+}
 
-for(i in c(5,7,10)){
-  cirr_res$isomap[[i]] <- isomap(dist = phyl_unifrac_cirrhosis, ndim = 2, k = i)
-  t2d_res$isomap[[i]] <- isomap(dist = phyl_unifrac_t2d, ndim = 2, k = i)
+
+# algal microbiome
+data_dist <- readRDS('result/Evaluation/alga_2-dist.rds')
+
+for(k in c(5,7,10)){
+  res <- isomap(dist = data_dist, ndim = 2, k = k)$points
+  write.csv(res, sprintf('result/Evaluation/alga_2-iso-%02d-Z.csv',k), row.names=FALSE)
 }
 
 
@@ -34,7 +29,7 @@ for(i in c(5,7,10)){
 # phate(tree.data.small$data)
 
 ### Eval
-eval_res <- list()
+# eval_res <- list()
 # eval_res$mds <- rep(0, 100)
 # eval_res$fmds3 <- rep(0, 100)
 # eval_res$fmds5 <- rep(0, 100)
@@ -138,50 +133,43 @@ eval_res <- list()
 # }
 
 
-
-lapply(eval_res, summary)
-
-lapply(eval_res, mean)
-
-for(i in 1:100){
-  # fmds
-  set.seed(i)
-  eval_res$fmds3[i] <- rp_eval(100, sim_data$distmat, sim_data$data$Y, 
-                               sim_res2$proposed$lambda0.3$z, 10)$diff_corr
-  set.seed(i)
-  eval_res$fmds5[i] <- rp_eval(100, sim_data$distmat, sim_data$data$Y, 
-                               sim_res2$proposed$lambda0.5$z, 10)$diff_corr
-  set.seed(i)
-  eval_res$fmds7[i] <- rp_eval(100, sim_data$distmat, sim_data$data$Y, 
-                               sim_res$proposed$lambda0.7$z, 10)$diff_corr
-}
+# for(i in 1:100){
+#   # fmds
+#   set.seed(i)
+#   eval_res$fmds3[i] <- rp_eval(100, sim_data$distmat, sim_data$data$Y, 
+#                                sim_res2$proposed$lambda0.3$z, 10)$diff_corr
+#   set.seed(i)
+#   eval_res$fmds5[i] <- rp_eval(100, sim_data$distmat, sim_data$data$Y, 
+#                                sim_res2$proposed$lambda0.5$z, 10)$diff_corr
+#   set.seed(i)
+#   eval_res$fmds7[i] <- rp_eval(100, sim_data$distmat, sim_data$data$Y, 
+#                                sim_res$proposed$lambda0.7$z, 10)$diff_corr
+# }
 # 
-# eval_res$fmds3 <- max(eval_res$fmds3) - eval_res$fmds3
-# summary(rp_eval_n)
-
-######### eval to site1
-eval_res$site1 <- lapply(
-  site1_embed[1:21],
-  function(x){
-    rp_eval(100, distmat1, y1, x, 10)
-  }
-)
-## without nn
-
-eval_res$site2 <- lapply(
-  site2_embed[1:21],
-  function(x){
-    rp_eval(100, distmat2, y2, x, 10)
-  }
-)
-
-eval_res$sim <- lapply(
-  sim_embed,
-  function(x){
-    rp_eval(100, sim_data$distmat, sim_data$data$Y, x, 10)
-  }
-)
-
-
-cbind(eval_res$site1, eval_res$site2)
-t(data.frame(eval_res$sim))
+# 
+# ######### eval to site1
+# eval_res$site1 <- lapply(
+#   site1_embed[1:21],
+#   function(x){
+#     rp_eval(100, distmat1, y1, x, 10)
+#   }
+# )
+# ## without nn
+# 
+# eval_res$site2 <- lapply(
+#   site2_embed[1:21],
+#   function(x){
+#     rp_eval(100, distmat2, y2, x, 10)
+#   }
+# )
+# 
+# eval_res$sim <- lapply(
+#   sim_embed,
+#   function(x){
+#     rp_eval(100, sim_data$distmat, sim_data$data$Y, x, 10)
+#   }
+# )
+# 
+# 
+# cbind(eval_res$site1, eval_res$site2)
+# t(data.frame(eval_res$sim))
