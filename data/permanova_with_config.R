@@ -36,6 +36,7 @@ pseudo_F <- function(mat=NULL, trt, d = NULL){
 
 get_p <- function(mat=NULL, d=NULL, trt, n_iter=999, fun=pseudo_F){
   # initialize
+  trt <- as.matrix(trt)
   f_permuted = matrix(0, nrow=n_iter, ncol=1)  # pseudo-F only
   # iterate to get pseudo F
   N <- length(trt)

@@ -17,23 +17,26 @@ myplot <- function(x, y, ...){
 
 ## import and process
 # v_lambda = (0:20)/20
-v_lambda2 = (0:5)/5
+v_lambda1 = c(0,1,2,3,4,8,12,16,20)/20
+v_lambda2 = c(c(0:5)/50, c(4,8,12,16,20)/20)
 df_eval <- data.frame(matrix(ncol=6, nrow=0))
-colnames(df_eval) <- c('method', 'rep', 'lambda', 'stress', 'stress_raw', 'pearson_corr')
+colnames(df_eval) <- c('method', 'rep', 'lambda', 'stress', 'p_diff', 'pearson_corr')
 
 for(rep in 1:3){
-  for(lambda in v_lambda2){ # FMDS
+  for(lambda in v_lambda1){ # FMDS
     # lambda <- v_lambda[i]
-    z_lambda_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d/sim_%d-fmds-%.2f-Z.csv', rep, rep, lambda))
-      # read.csv(paste('result/HyperparameterStudy/sim_', rep, '/sim-', sprintf('%.2f',lambda), '-Z.csv', sep=''))
-    y_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d-Y.csv', rep, rep))
-    x_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d-data.csv', rep, rep))
+    if(lambda==0.15) {
+      z_lambda_df <- read.csv(sprintf('result/HyperparameterStudy/iter_200/sim_%d-fmds-%.2f-Z.csv', rep, lambda))
+      } else z_lambda_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d/sim_%d-fmds-%.2f-Z.csv', rep, rep, lambda))
+    y_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d-Y.csv', rep))
+    x_df <- read.csv(sprintf('result/HyperparameterStudy/sim_%d-data.csv', rep))
     x_dist <- get_dist_mat(x_df)
     z_dist <- get_dist_mat(z_lambda_df)
     stress_lambda <- get_stress(x_dist, z_dist)
-    stress_raw_lambda <- get_stress_raw(x_dist, z_dist)
+    # stress_raw_lambda <- get_stress_raw(x_dist, z_dist)
+    p_diff <- get_p_diff(z=z_lambda_df, d=x_dist, y=y_df)
     corr_lambda <- get_pearson_corr(x_dist, z_dist)
-    df_eval[nrow(df_eval)+1,] <- list('FMDS', rep, lambda, stress_lambda, stress_raw_lambda, corr_lambda)
+    df_eval[nrow(df_eval)+1,] <- list('FMDS', rep, lambda, stress_lambda, p_diff, corr_lambda)
   }
   
   for(lambda in v_lambda2){ # SMDS
@@ -41,19 +44,45 @@ for(rep in 1:3){
     x_dist <- get_dist_mat(x_df)
     z_dist <- get_dist_mat(z_lambda_df)
     stress_lambda <- get_stress(x_dist, z_dist)
-    stress_raw_lambda <- get_stress_raw(x_dist, z_dist)
+    # stress_raw_lambda <- get_stress_raw(x_dist, z_dist)
+    p_diff <- get_p_diff(z=z_lambda_df, d=x_dist, y=y_df)
     corr_lambda <- get_pearson_corr(x_dist, z_dist)
-    df_eval[nrow(df_eval)+1,] <- list('SMDS', rep, lambda, stress_lambda, stress_raw_lambda, corr_lambda)
+    df_eval[nrow(df_eval)+1,] <- list('SMDS', rep, lambda, stress_lambda, p_diff, corr_lambda)
   }
 }
 
 df_eval_stat <- df_eval %>%
   group_by(method, lambda) %>%
   summarize(stress_mean = mean(stress), stress_std = sd(stress),
-            stress_raw_mean = mean(stress_raw), stress_raw_std = sd(stress_raw),
+            p_diff_mean = mean(p_diff), p_diff_std = sd(p_diff),
             pearson_corr_mean = mean(pearson_corr), pearson_corr_std = sd(pearson_corr),
             n = n())
 
+
+## A. Lambda v p_diff
+ggplot(data=df_eval_stat) +
+  geom_point(aes(x=lambda, y=p_diff_mean, shape=method), size=1.5, stroke=0.25) +
+  geom_errorbar(aes(x=lambda, ymin=p_diff_mean-p_diff_std, ymax=p_diff_mean+p_diff_std),
+                width=0.02, color='black', size=0.25) +
+  scale_shape_manual(values=c(1,2)) +
+  # scale_y_continuous(limits=c(0.25,1), breaks = (1:5)/5) +
+  scale_x_continuous(trans = 'log10') +
+  theme(strip.background = element_rect(fill=NA),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
+        legend.position = "None",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(size=8, colour='black'),
+        axis.text.y = element_text(size=8, colour='black'),
+        axis.line = element_blank(),
+        axis.ticks = element_line(linewidth=0.5)
+  )
+
+ggsave('figures/fig2A_v2.pdf', width=1.6, height=1.55, units='in')
 
 ## A. Lambda v dist-corr
 ggplot(data=df_eval_stat) +

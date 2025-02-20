@@ -21,6 +21,14 @@ get_stress_raw <- function(x_dist, z_dist){
 }
 
 
+# P ratio (do not confuse with earlier version termed p-ratio)
+get_p_diff <- function(z, d, y){
+  p0 <- get_p(d=d, trt=y)$p
+  pemb <- get_p(mat=z, trt=y)$p
+  return(abs(p0-pemb)) # ranging [0,1], less variant to data replicates by division
+}
+
+
 # Pearson correlation in distance
 get_pearson_corr <- function(x_dist, z_dist){
   res <- cov(x_dist, z_dist) / (sd(x_dist) * sd(z_dist))

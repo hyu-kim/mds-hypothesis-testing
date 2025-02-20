@@ -1,3 +1,5 @@
+library(parallel)
+library(pbmcapply)
 library(superMDS)
 source('mm.R')
 
@@ -8,7 +10,7 @@ for(r in 1:3){
   dist_mat <- as.matrix(dist(data_df[,1:4]))
   z0 <- cmdscale(dist_mat, k = 2)
   pbmclapply(1:6, function(i){
-    x <- c(0:5)[i] * 0.2
+    x <- c(1:4)[i] * 0.02
     res <- TrainSuperMDS(d = dist_mat, y = y_df, alpha = x)
     write.csv(res$z, sprintf('result/HyperparameterStudy/SMDS/sim_%d-smds-%.2f-Z.csv', 
                              r, x), row.names=FALSE)

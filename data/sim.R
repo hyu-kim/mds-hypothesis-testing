@@ -30,6 +30,11 @@ for(r in 1:3){
   y_df <- as.matrix(read.csv(sprintf('result/HyperparameterStudy/sim_%d-Y.csv',r)))
   dist_mat <- as.matrix(dist(data_df[,1:4]))
   z0 <- cmdscale(dist_mat, k = 2)
-  res <- mm_cmds(nit = 200, lambda = 0.15, z0 = z0, D = dist_mat, y = y_df, dataset = paste('sim',r,sep='_'))
+  res <- pbmclapply(1:3, function(i){
+    x <- c(0:2)[i] * 0.05
+    return(mm_cmds(nit = 20, lambda = x, z0 = z0, D = dist_mat, y = y_df,
+                   dataset = paste('sim',r,sep='_')))
+  }, mc.cores = 128)
+  # res <- mm_cmds(nit = 200, lambda = 0.10, z0 = z0, D = dist_mat, y = y_df, dataset = paste('sim',r,sep='_'))
   print(sprintf("Set %d done",r))
 }
