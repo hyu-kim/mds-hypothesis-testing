@@ -5,12 +5,13 @@ source('fig_util.R')
 # custom plot option
 myplot <- function(x, y, ...){
   plot(x, y, xlab = "", ylab = "", xaxt = 'n', yaxt ='n',
-       col = alpha("black", 0.15), 
+       # xaxp = c(0, 0.8, 2),
        xlim = c(0, 0.9), ylim = c(0, 0.9),
+       col = alpha("black", 0.15), 
        pch=16, cex=0.3, cex.axis=1, 
        tcl=-0.2, lwd=0.5, ...
   )
-  axis(side=1, lwd=0.5, tck=-0.05)
+  axis(side=1, at=c(0, 0.4, 0.8), lwd=0.5, tck=-0.05)
   axis(side=2, lwd=0.5, tck=-0.05, las=2)
 }
 
@@ -59,34 +60,27 @@ df_eval_stat <- df_eval %>%
             n = n())
 
 
-## A. Lambda v p_diff
-ggplot(data=df_eval_stat) +
-  geom_point(aes(x=lambda, y=p_diff_mean, shape=method), size=1.5, stroke=0.25) +
-  geom_errorbar(aes(x=lambda, ymin=p_diff_mean-p_diff_std, ymax=p_diff_mean+p_diff_std),
-                width=0.02, color='black', size=0.25) +
-  scale_shape_manual(values=c(1,2)) +
-  # scale_y_continuous(limits=c(0.25,1), breaks = (1:5)/5) +
-  scale_x_continuous(trans = 'log10') +
-  theme(strip.background = element_rect(fill=NA),
-        panel.background = element_rect(fill = "transparent", color = NA),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        plot.background = element_blank(),
-        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
-        legend.position = "None",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        axis.text.x = element_text(size=8, colour='black'),
-        axis.text.y = element_text(size=8, colour='black'),
-        axis.line = element_blank(),
-        axis.ticks = element_line(linewidth=0.5)
-  )
+## A. Shepard plot
+x_dist <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1-data.csv'))
+z_dist_fmds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1/sim_1-fmds-0.00-Z.csv'))
+z_dist_fmds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1/sim_1-fmds-1.00-Z.csv'))
+z_dist_smds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/sim_1-smds-0.00-Z.csv'))
+z_dist_smds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/sim_1-smds-1.00-Z.csv'))
 
-ggsave('figures/fig2A_v2.pdf', width=1.6, height=1.55, units='in')
 
-## A. Lambda v dist-corr
+pdf("figures/fig3A.pdf", width = 4.9, height = 1.2)
+par(mfrow = c(1, 4), mar = c(1.5,2,0.2,0.2), mgp = c(0,0.6,0), lwd=0.75)
+myplot(x_dist, z_dist_fmds_p0)
+myplot(x_dist, z_dist_fmds_p6)
+myplot(x_dist, z_dist_smds_p0)
+myplot(x_dist, z_dist_smds_p6)
+dev.off()
+
+df_eval_stat <- df_eval_stat[(df_eval_stat$lambda==0)|(df_eval_stat$lambda>=0.2),]
+
+## B. Lambda v dist-corr
 ggplot(data=df_eval_stat) +
-  geom_point(aes(x=lambda, y=pearson_corr_mean, shape=method), size=1.5, stroke=0.25) +
+  geom_point(aes(x=lambda, y=pearson_corr_mean, shape=method), size=2, stroke=0.25) +
   geom_errorbar(aes(x=lambda, ymin=pearson_corr_mean-pearson_corr_std, 
                     ymax=pearson_corr_mean+pearson_corr_std),
                 width=0.05, color='black', size=0.25) +
@@ -108,12 +102,12 @@ ggplot(data=df_eval_stat) +
         axis.ticks = element_line(linewidth=0.5)
   )
 
-ggsave('figures/fig2A.pdf', width=1.6, height=1.55, units='in')
+ggsave('figures/fig3B.pdf', width=2.0, height=1.95, units='in')
 
 
-## B. Lambda vs Stress-1
+## C. Lambda vs Stress-1
 ggplot(data=df_eval_stat) +
-  geom_point(aes(x=lambda, y=stress_mean, shape=method), size=1.5, stroke=0.25) +
+  geom_point(aes(x=lambda, y=stress_mean, shape=method), size=2, stroke=0.25) +
   geom_errorbar(aes(x=lambda, ymin=stress_mean-stress_std, ymax=stress_mean+stress_std),
                 width=0.05, color='black', size=0.25) +
   scale_shape_manual(values=c(1,2)) +
@@ -134,49 +128,4 @@ ggplot(data=df_eval_stat) +
         axis.ticks = element_line(linewidth=0.5)
   )
 
-ggsave('figures/fig2B.pdf', width=1.6, height=1.55, units='in')
-
-
-## C. Lambda v raw stress
-stress_raw_max <- max(df_eval$stress_raw)
-ggplot(data=df_eval_stat) +
-  geom_point(aes(x=lambda, y=stress_raw_mean/1, shape=method), size=1.5, stroke=0.25) +
-  geom_errorbar(aes(x=lambda, ymin=(stress_raw_mean-stress_raw_std)/1, 
-                    ymax=(stress_raw_mean+stress_raw_std)/1),
-                width=0.05, color='black', size=0.25) +
-  scale_shape_manual(values=c(1,2)) +
-  # scale_y_continuous(limits=c(0,1), breaks = (0:5)/5) +
-  scale_x_continuous(breaks = (0:5)/5) +
-  theme(strip.background = element_rect(fill=NA),
-        panel.background = element_rect(fill = "transparent", color = NA),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        plot.background = element_blank(),
-        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
-        legend.position = "None",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
-        axis.text.x = element_text(size=8, colour='black'),
-        axis.text.y = element_text(size=8, colour='black'),
-        axis.line = element_blank(),
-        axis.ticks = element_line(linewidth=0.25, colour = 'black')
-  )
-
-ggsave('figures/fig2C.pdf', width=1.6, height=1.55, units='in')
-
-
-## D. Shepard plot
-x_dist <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1-data.csv'))
-z_dist_fmds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1/sim_1-fmds-0.00-Z.csv'))
-z_dist_fmds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1/sim_1-fmds-0.60-Z.csv'))
-z_dist_smds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/sim_1-smds-0.00-Z.csv'))
-z_dist_smds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/sim_1-smds-0.60-Z.csv'))
-
-
-pdf("figures/fig2D.pdf", width = 5.1, height = 1.1)
-par(mfrow = c(1, 4), mar = c(1.5,3,0.2,0.2), mgp = c(0,0.6,0), lwd=0.75)
-myplot(x_dist, z_dist_fmds_p0)
-myplot(x_dist, z_dist_smds_p0)
-myplot(x_dist, z_dist_fmds_p6)
-myplot(x_dist, z_dist_smds_p6)
-dev.off()
+ggsave('figures/fig3C.pdf', width=2.0, height=1.95, units='in')
