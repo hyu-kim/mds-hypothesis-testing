@@ -1,4 +1,5 @@
 library(ggplot2)
+library(ggstar)
 source('fig_util.R')
 source('../source/dreval/continuity.R')
 source('../source/dreval/trustworthiness.R')
