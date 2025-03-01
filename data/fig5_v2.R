@@ -3,9 +3,9 @@ source('fig_util.R')
 source('../source/dreval/continuity.R')
 source('../source/dreval/trustworthiness.R')
 
-method_v <- c('fmds','mds', 'smds', 'umap_s', 'umap_u', 'tsne', 'iso', 'nn')
-params1_v <- (1:4)/5
-params2_v <- c(5, 10, 20, 30)
+method_v <- c('fmds','mds', 'umap_s', 'umap_u', 'tsne', 'iso', 'nn')
+params1_v <- c(0.2,0.4,0.8)
+params2_v <- c(5, 10, 30)
 params3_v <- c(5, 7, 10)
 
 eval_df <- data.frame(matrix(ncol=9, nrow=0))
@@ -44,10 +44,10 @@ for(k in c(3,27)){ # local, global
       eval_df[nrow(eval_df)+1,] <- list(m, 0, k, c, t, s, corr_dist, res$q, res$rho)
       next
     }
-    params_v <- if(m=='smds' | m=='fmds') params1_v else if (m=='umap_s' | m=='umap_u') params2_v else params3_v
+    params_v <- if(m=='fmds') params1_v else if (m=='umap_s' | m=='umap_u') params2_v else params3_v
     for(p in params_v){
       z_embed <- 
-        if(m=='fmds' | m=='smds'){
+        if(m=='fmds'){
           read.csv(sprintf('result/Evaluation/alga_2-%s-%.2f-Z.csv', m, p))
         } else read.csv(sprintf('result/Evaluation/alga_2-%s-%02d-Z.csv', m, p))
       
@@ -62,17 +62,20 @@ for(k in c(3,27)){ # local, global
   }
 }
 
+eval_df$hyperparameter[(eval_df$method=='tsne'|eval_df$method=='iso')&eval_df$hyperparameter==10] <- 11
 
 
 # Panel: Continuity v. Trustworthiness, k = 3
 ggplot(data=eval_df[eval_df$k==3,]) +
   geom_point(aes(x=continuity, y=trustworthiness, shape=method, color=method, 
-                 fill=as.factor(hyperparameter)), size=2, stroke=0.35) +
-  scale_shape_manual(values=c(21,3,16,8,22,4,24,25)) + 
-  # ('fmds', 'iso', 'mds', 'nn', 'smds', 'tsne', 'umap_s', 'umap_u')
-  scale_color_manual(values=c('red','black', 'black','black','black','black','black','black','black')) +
-  scale_fill_manual(values=c('black','grey99', 'grey75', 'grey50', 'grey25', 
-                             'grey99', 'grey80', 'grey60', 'grey40', 'grey20')) +
+                 fill=as.factor(hyperparameter)), size=2.5, stroke=0.5) +
+  scale_shape_manual(values=c(21,22,4,8,23,24,25)) + 
+  # ('fmds', 'iso', 'mds', 'nn', 'tsne', 'umap_s', 'umap_u')
+  scale_color_manual(values=c('red','grey30','grey30','grey30','grey30','grey30',
+                              'grey30','grey30')) +
+  scale_fill_manual(values=c('white','grey99', 'grey75', 'grey25',
+                             'grey99', 'grey75', 'grey75', 'grey25', 'grey25')) +
+  # 0, 0.2, 0.4, 0.8, 5, 7, 10, 11, 30 (11 for tsne/iso)
   # scale_y_continuous(breaks = (0:5)/5) +
   # scale_x_continuous(breaks = (0:5)/5) +
   theme(strip.background = element_rect(fill=NA),
@@ -90,18 +93,19 @@ ggplot(data=eval_df[eval_df$k==3,]) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave('figures/fig4A_v2.pdf', width=2.55, height=2, units='in')
+ggsave('figures/fig5A_v3.pdf', width=2.55, height=2, units='in')
 
 
 # Panel: Continuity v. Trustworthiness, k = 27
 ggplot(data=eval_df[eval_df$k==27,]) +
   geom_point(aes(x=continuity, y=trustworthiness, shape=method, color=method, 
-                 fill=as.factor(hyperparameter)), size=2, stroke=0.35) +
-  scale_shape_manual(values=c(21,3,16,8,22,4,24,25)) + 
-  # ('fmds', 'iso', 'mds', 'nn', 'smds', 'tsne', 'umap_s', 'umap_u')
-  scale_color_manual(values=c('red','black', 'black','black','black','black','black','black','black')) +
-  scale_fill_manual(values=c('black','grey99', 'grey75', 'grey50', 'grey25', 
-                             'grey99', 'grey80', 'grey60', 'grey40', 'grey20')) +
+                 fill=as.factor(hyperparameter)), size=2.5, stroke=0.5) +
+  scale_shape_manual(values=c(21,22,4,8,23,24,25)) + 
+  # ('fmds', 'iso', 'mds', 'nn', 'tsne', 'umap_s', 'umap_u')
+  scale_color_manual(values=c('red','grey30','grey30','grey30','grey30','grey30',
+                              'grey30','grey30')) +
+  scale_fill_manual(values=c('white','grey99', 'grey75', 'grey25',
+                             'grey99', 'grey75', 'grey75', 'grey25', 'grey25')) +
   # scale_y_continuous(breaks = (0:5)/5) +
   # scale_x_continuous(breaks = (0:5)/5) +
   theme(strip.background = element_rect(fill=NA),
@@ -119,18 +123,19 @@ ggplot(data=eval_df[eval_df$k==27,]) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave('figures/fig4B_v2.pdf', width=2.55, height=2, units='in')
+ggsave('figures/fig5B_v3.pdf', width=2.55, height=2, units='in')
 
 
 # Panel C: stress v. corr_dist
 ggplot(data=eval_df) +
   geom_point(aes(x=stress, y=corr_dist, shape=method, color=method, 
-                 fill=as.factor(hyperparameter)), size=2, stroke=0.35) +
-  scale_shape_manual(values=c(21,3,16,8,22,4,24,25)) + 
-    # ('fmds', 'iso', 'mds', 'nn', 'smds', 'tsne', 'umap_s', 'umap_u')
-  scale_color_manual(values=c('red','black', 'black','black','black','black','black','black','black')) +
-  scale_fill_manual(values=c('black','grey99', 'grey75', 'grey50', 'grey25', 
-                             'grey99', 'grey80', 'grey60', 'grey40', 'grey20')) +
+                 fill=as.factor(hyperparameter)), size=2.5, stroke=0.5) +
+  scale_shape_manual(values=c(21,22,4,8,23,24,25)) + 
+  # ('fmds', 'iso', 'mds', 'nn', 'tsne', 'umap_s', 'umap_u')
+  scale_color_manual(values=c('red','grey30','grey30','grey30','grey30','grey30',
+                              'grey30','grey30')) +
+  scale_fill_manual(values=c('white','grey99', 'grey75', 'grey25',
+                             'grey99', 'grey75', 'grey75', 'grey25', 'grey25')) +
   # scale_y_continuous(breaks = (0:5)/5) +
   # scale_x_continuous(breaks = (0:5)/5) +
   theme(strip.background = element_rect(fill=NA),
@@ -148,18 +153,19 @@ ggplot(data=eval_df) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave('figures/fig4C.pdf', width=2.1, height=2, units='in')
+ggsave('figures/fig5C_v2.pdf', width=2.1, height=2, units='in')
 
 
 # Panel D: p_ratio v. corr_f
 ggplot(data=eval_df) +
   geom_point(aes(x=corr_f, y=p_ratio, shape=method, color=method, 
-                 fill=as.factor(hyperparameter)), size=2, stroke=0.35) +
-  scale_shape_manual(values=c(21,3,16,8,22,4,24,25)) + 
-    # ('fmds', 'iso', 'mds', 'nn', 'smds', 'tsne', 'umap_s', 'umap_u')
-  scale_color_manual(values=c('red','black', 'black','black','black','black','black','black','black')) +
-  scale_fill_manual(values=c('black','grey99', 'grey75', 'grey50', 'grey25', 
-                             'grey99', 'grey80', 'grey60', 'grey40', 'grey20')) +
+                 fill=as.factor(hyperparameter)), size=2.5, stroke=0.5) +
+  scale_shape_manual(values=c(21,22,4,8,23,24,25)) + 
+  # ('fmds', 'iso', 'mds', 'nn', 'tsne', 'umap_s', 'umap_u')
+  scale_color_manual(values=c('red','grey30','grey30','grey30','grey30','grey30',
+                              'grey30','grey30')) +
+  scale_fill_manual(values=c('white','grey99', 'grey75', 'grey25',
+                             'grey99', 'grey75', 'grey75', 'grey25', 'grey25')) +
   # scale_y_continuous(breaks = (0:5)/5) +
   # scale_x_continuous(breaks = (0:5)/5) +
   scale_y_continuous(breaks = (0:4)/4) +
@@ -178,7 +184,7 @@ ggplot(data=eval_df) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave('figures/fig4D.pdf', width=3, height=2, units='in')
+ggsave('figures/fig5D_v2.pdf', width=3, height=2, units='in')
 
 
 # Panes: lambda v distance correlation (FMDS, SMDS)

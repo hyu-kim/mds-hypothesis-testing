@@ -55,8 +55,8 @@ ggplot(data=eval_df[eval_df$k==7,]) +
   # ('fmds', 'iso', 'mds', 'tsne', 'umap_s', 'umap_u')
   scale_color_manual(values=c('red','grey30','grey30','grey30','grey30','grey30',
                               'grey30','grey30')) +
-  scale_fill_manual(values=c('grey99', 'grey75', 'grey50', 'grey25', 'grey99', 
-                             'grey75', 'grey50', 'grey25')) +
+  scale_fill_manual(values=c('grey99', 'grey75', 'grey25', 'grey99', 'grey75', 
+                             'grey25')) +
   scale_y_continuous(breaks = seq(0.85, 1, 0.05), limits = c(0.85, 1)) +
   # scale_x_continuous(breaks = (0:5)/5) +
   theme(strip.background = element_rect(fill=NA),
@@ -85,8 +85,8 @@ ggplot(data=eval_df[eval_df$k==75,]) +
   # ('fmds', 'iso', 'mds', 'tsne', 'umap_s', 'umap_u')
   scale_color_manual(values=c('red','grey30','grey30','grey30','grey30','grey30',
                               'grey30','grey30')) +
-  scale_fill_manual(values=c('grey99', 'grey75', 'grey50', 'grey25', 'grey99', 
-                             'grey75', 'grey50', 'grey25')) +
+  scale_fill_manual(values=c('grey99', 'grey75', 'grey25', 'grey99', 'grey75', 
+                             'grey25')) +
   # scale_y_continuous(breaks = (0:5)/5) +
   # scale_x_continuous(breaks = (0:5)/5) +
   theme(strip.background = element_rect(fill=NA),
@@ -115,8 +115,8 @@ ggplot(data=eval_df) +
     # ('fmds', 'iso', 'mds', 'tsne', 'umap_s', 'umap_u')
   scale_color_manual(values=c('red','grey30','grey30','grey30','grey30','grey30',
                               'grey30','grey30')) +
-  scale_fill_manual(values=c('grey99', 'grey75', 'grey50', 'grey25', 'grey99', 
-                             'grey75', 'grey50', 'grey25')) +
+  scale_fill_manual(values=c('grey99', 'grey75', 'grey25', 'grey99', 'grey75', 
+                             'grey25')) +
   # scale_y_continuous(breaks = (0:5)/5) +
   # scale_x_continuous(breaks = (0:5)/5) +
   theme(strip.background = element_rect(fill=NA),
@@ -145,8 +145,8 @@ ggplot(data=eval_df) +
     # ('fmds', 'iso', 'mds', 'tsne', 'umap_s', 'umap_u')
   scale_color_manual(values=c('red','grey30','grey30','grey30','grey30','grey30',
                               'grey30','grey30')) +
-  scale_fill_manual(values=c('grey99', 'grey75', 'grey50', 'grey25', 'grey99', 
-                             'grey75', 'grey50', 'grey25')) +
+  scale_fill_manual(values=c('grey99', 'grey75', 'grey25', 'grey99', 'grey75', 
+                             'grey25')) +
   # scale_y_continuous(breaks = (0:5)/5) +
   # scale_x_continuous(breaks = (0:5)/5) +
   theme(strip.background = element_rect(fill=NA),
