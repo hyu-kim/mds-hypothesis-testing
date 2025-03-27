@@ -210,3 +210,9 @@ ggplot(data=eval_df[eval_df$method=='fmds'|eval_df$method=='smds',]) +
         axis.line = element_blank(),
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
+
+
+# numbers to insert in main text
+eval_df_local <- eval_df[eval_df$k==3,]
+(eval_df_local$continuity[eval_df_local$method=='umap_s' | eval_df_local$method=='nn'])/0.9295 - 1
+

@@ -60,6 +60,23 @@ df_eval_stat <- df_eval %>%
             n = n())
 
 
+## Numbers to insert in main text
+df_eval_rate <- data.frame(matrix(ncol=3, nrow=0))
+colnames(df_eval_rate) <- c('method', 'rep', 'stress_rate')
+for(m in c('FMDS', 'SMDS')){
+  for(r in 1:3){
+    df_eval_rate[nrow(df_eval_rate)+1,] <- 
+      list(m, r, 
+           df_eval$stress[df_eval$method==m & df_eval$rep==r & df_eval$lambda==1] -
+             df_eval$stress[df_eval$method==m & df_eval$rep==r & df_eval$lambda==0]
+           )
+  }
+}
+
+print(mean(df_eval_rate$stress_rate[df_eval_rate$method=='SMDS']) / 
+        mean(df_eval_rate$stress_rate[df_eval_rate$method=='FMDS']))
+
+
 ## A. Shepard plot
 x_dist <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1-data.csv'))
 z_dist_fmds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/sim_1/sim_1-fmds-0.00-Z.csv'))
@@ -68,7 +85,7 @@ z_dist_smds_p0 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/sim_1-s
 z_dist_smds_p6 <- get_dist_mat(read.csv('result/HyperparameterStudy/SMDS/sim_1-smds-1.00-Z.csv'))
 
 
-pdf("figures/fig3A.pdf", width = 4.9, height = 1.2)
+pdf("figures/fig3A_v2.pdf", width = 4.9, height = 1.2)
 par(mfrow = c(1, 4), mar = c(1.5,2,0.2,0.2), mgp = c(0,0.6,0), lwd=0.75)
 myplot(x_dist, z_dist_fmds_p0)
 myplot(x_dist, z_dist_fmds_p6)
@@ -102,7 +119,7 @@ ggplot(data=df_eval_stat) +
         axis.ticks = element_line(linewidth=0.5)
   )
 
-ggsave('figures/fig3B.pdf', width=2.0, height=1.95, units='in')
+ggsave('figures/fig3B_v2.pdf', width=2.0, height=1.95, units='in')
 
 
 ## C. Lambda vs Stress-1
@@ -128,4 +145,4 @@ ggplot(data=df_eval_stat) +
         axis.ticks = element_line(linewidth=0.5)
   )
 
-ggsave('figures/fig3C.pdf', width=2.0, height=1.95, units='in')
+ggsave('figures/fig3C_v2.pdf', width=2.0, height=1.95, units='in')

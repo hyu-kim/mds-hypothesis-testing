@@ -1,28 +1,19 @@
 library(ggplot2)
 
-method_v <- c('fmds', 'mds')
-params_v <- (1:2)/2
+params_v <- (0:2)/2
 
 vis_df <- data.frame(matrix(ncol=5, nrow=0))
 colnames(vis_df) <- c('method', 'hyperparameter', 'y', 'X1', 'X2')
 
-y_alga2 <- as.matrix(read.csv('result/Evaluation/alga_2-Y.csv'))
+y_alga2 <- as.matrix(read.csv('result/HyperparameterStudy/alga_2-Y.csv'))
 
-for(m in method_v){
-  if(m=='mds'){
-    z_embed <- read.csv('result/Evaluation/alga_2-mds-Z.csv')
-    vis_df <- rbind(vis_df, data.frame(method = m, hyperparameter = 0, 
-                                       y = as.factor(y_alga2), 
-                                       X1 = z_embed[,1], X2 = z_embed[,2]))
-    next
-  }
-  for(p in params_v){
-    z_embed <- read.csv(sprintf('result/Evaluation/alga_2/alga_2-%s-%.2f-Z.csv', m, p))
-    vis_df <- rbind(vis_df, data.frame(method = m, hyperparameter = p, 
-                                       y = as.factor(y_alga2), 
-                                       X1 = z_embed[,1], X2 = z_embed[,2]))
-  }
+for(p in params_v){
+  z_embed <- read.csv(sprintf('result/HyperparameterStudy/alga_2/alga_2-fmds-%.2f-Z.csv', p))
+  vis_df <- rbind(vis_df, data.frame(method = 'fmds', hyperparameter = p, 
+                                     y = as.factor(y_alga2), 
+                                     X1 = z_embed[,1], X2 = z_embed[,2]))
 }
+
 
 
 # plot

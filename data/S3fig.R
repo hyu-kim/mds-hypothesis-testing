@@ -1,5 +1,6 @@
 source('fig_util.R')
 library(scales)
+
 # custom plot option
 myplot <- function(x, y, t, p, ...){
   plot(x, y, xlab = "", ylab = "", xaxt = 'n', yaxt ='n',
@@ -15,17 +16,17 @@ myplot <- function(x, y, t, p, ...){
 
 
 plot_fcor_set <- function(dataset='sim_1', method='fmds', method_f='FMDS', params_v=c(0.5,1)){
-  data_df <- as.matrix(read.csv(sprintf('result/Evaluation/%s-data.csv', dataset)))
-  y_orig <- as.matrix(read.csv(sprintf('result/Evaluation/%s-Y.csv', dataset)))
+  data_df <- as.matrix(read.csv(sprintf('Data/Simulated/%s-data.csv', dataset)))
+  y_orig <- as.matrix(read.csv(sprintf('Data/Simulated/%s-Y.csv', dataset)))
   
   for(p in params_v){
     if(p<=1) {
-      z_embed <- as.matrix(read.csv(sprintf('result/Evaluation/%s-%s-%.2f-Z.csv',
-                                            dataset,method,p)))
+      z_embed <- as.matrix(read.csv(sprintf('Data/Simulated/%s/%s-%s-%.2f-Z.csv',
+                                            method_f,dataset,method,p)))
       }
     else {
-      z_embed <- as.matrix(read.csv(sprintf('result/Evaluation/%s-%s-%02d-Z.csv',
-                                            dataset,method,p)))
+      z_embed <- as.matrix(read.csv(sprintf('Data/Simulated/%s/%s-%s-%02d-Z.csv',
+                                            method_f,dataset,method,p)))
       }
       
     res <- rp_eval2(dm=as.matrix(dist(data_df)), y_orig=y_orig, z_emb=z_embed)
@@ -36,7 +37,7 @@ plot_fcor_set <- function(dataset='sim_1', method='fmds', method_f='FMDS', param
 }
 
 method_v <- c('mds','fmds','smds','umap_s','umap_u','tsne','iso')
-method_formal_v <- c('MDS','FMDS','SMDS','UMAP-S','UMAP-U','t-SNE','Isomap')
+method_formal_v <- c('MDS','F-MDS','superMDS','UMAP-S','UMAP-U','t-SNE','Isomap')
 params_v1 <- c(1:4)/5
 params_v2 <- c(5,10,20,30)
 

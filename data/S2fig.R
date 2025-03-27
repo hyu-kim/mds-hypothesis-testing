@@ -1,3 +1,5 @@
+library(scales)
+
 # custom plot option
 myplot <- function(x, y, t, p, ...){
   plot(x, y, xlab = "", ylab = "", xaxt = 'n', yaxt ='n',
@@ -27,7 +29,7 @@ plot_shepard_set <- function(dataset='sim_1', method='fmds', method_f='FMDS', pa
 
 
 method_v <- c('mds','fmds','smds','umap_s','umap_u','tsne','iso')
-method_formal_v <- c('MDS','FMDS','SMDS','UMAP-S','UMAP-U','t-SNE','Isomap')
+method_formal_v <- c('MDS','F-MDS','superMDS','UMAP-S','UMAP-U','t-SNE','Isomap')
 params_v1 <- c(1:4)/5
 params_v2 <- c(5,10,20,30)
 

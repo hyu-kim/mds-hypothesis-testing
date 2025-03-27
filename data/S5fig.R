@@ -42,13 +42,13 @@ plot_fcor_set <- function(dataset='alga_2', method='fmds', method_f='FMDS', para
 }
 
 method_v <- c('mds','nn','fmds','smds','umap_s','umap_u','tsne','iso')
-method_formal_v <- c('MDS','NN','FMDS','SMDS','UMAP-S','UMAP-U','t-SNE','Isomap')
+method_formal_v <- c('MDS','NN','F-MDS','superMDS','UMAP-S','UMAP-U','t-SNE','Isomap')
 params_v1 <- (1:4)/5 # fmds, smds
 params_v2 <- c(5,10,20,30) # umap
 params_v3 <- c(5,7,10) # tsne, isomap
 
 
-pdf("result/Fig_S5.pdf", width = 5, height = 8)
+pdf("figures/Fig_S5.pdf", width = 5, height = 8)
 
 par(mfrow = c(7,4), mar = c(1.5,2.5,0.8,0.1), mgp = c(0,0.3,0), lwd=0.75)
 
