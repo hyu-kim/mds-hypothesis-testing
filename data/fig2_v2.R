@@ -1,5 +1,5 @@
 library(ggplot2)
-## Panel A
+## Panel B
 v_lambda = c(0, 1, 2, 4, 10)/10
 v_linestyle = c('dotted', 'dashed', 'solid', 'blank', 'blank')
 v_linesize = c(0.5, 0.4, 0.2, 0.1, 0.1)
@@ -39,12 +39,12 @@ g +
 ggsave('figures/fig1A.pdf', width=2.15, height=3, units='in')
 
 
-## Panel B
+## Panel A
 # import
 v_lambda_1 = (0:3)/20 # lambdas for 200-iterated data
 v_lambda_2 = c(0,1,2,5,10)/10 # lambdas for 50-iterated data
 ratio_v = c(100, 1, 5)
-lambda = 0.4 # 0, 0.2, 0.4
+lambda = 0 # 0, 0.2, 0.4
 display_ratio = 0.2 # 0.2, 0.2
 df_log <- read.csv(paste('result/HyperparameterStudy/sim_1',
                          # ifelse(lambda>=0.10, '50', '200'),
@@ -52,11 +52,11 @@ df_log <- read.csv(paste('result/HyperparameterStudy/sim_1',
 
 ggplot(df_log) + 
   # geom_point(aes(x=epoch, y=obj_mds), size=0.75, shape=1) + # iter_50 only
-  # geom_line(aes(x=epoch, y=obj_confr*0.02), inherit.aes = FALSE, size=0.25, linetype='dashed') + # iter_50 only
-  geom_line(aes(x=epoch, y=obj_mds), size=0.25, linetype='solid') +
-  geom_point(aes(x=epoch, y=obj_confr*0.2), inherit.aes = FALSE, size=0.5, shape=16) +
-  scale_y_continuous(sec.axis = sec_axis(~./0.2, name="Confirmatory")) +
-  # ylim(c(0, 6000))+
+  # geom_point(aes(x=epoch, y=obj_mds), inherit.aes = FALSE, size=1, shape=4) +
+  # geom_point(aes(x=epoch, y=obj_confr*0.2), inherit.aes = FALSE, size=1, shape=1) +
+  geom_line(aes(x=epoch, y=obj_mds), size=0.25, linetype='dashed') +
+  geom_line(aes(x=epoch, y=obj_confr*0.2), inherit.aes = FALSE, size=0.25, linetype='solid') + # iter_50 only
+  scale_y_continuous(sec.axis = sec_axis(~./0.2, name="Confirmatory", breaks=c(0,50,100)), limits=c(0,24), breaks = c(0,10,20)) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
@@ -72,5 +72,5 @@ ggplot(df_log) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave(paste('figures/fig1_', sprintf('%.2f', lambda), '_obj.pdf', sep=''), 
-       width=2.6, height=1.2, units='in')
+ggsave(paste('figures/fig1A_', sprintf('%.2f', lambda), '_obj.pdf', sep=''), 
+       width=2.6, height=1.4, units='in')
