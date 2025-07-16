@@ -34,10 +34,18 @@ get_lambda <- function(p=p_up, p_diff=p_up-p0, model_lambda=model_out){
 }
 
 
-# MDS objective
+# Raw Stress
 mds_obj <- function(D, z){
+  N <- nrow(z)
   z_distmat <- get_dist_mat(z)
-  return(sum((D - z_distmat)^2)/2)
+  return(sum((D - z_distmat)^2)/N) # normalize - from scaling analysis
+}
+
+
+# MDS objective normalized (stress-1)
+mds_obj_norm <- function(D, z){
+  z_distmat <- get_dist_mat(z)
+  return(sum((D - z_distmat)^2)/sum(z_distmat^2))
 }
 
 
@@ -58,6 +66,14 @@ conf_obj <- function(y, z, D){
 
 
 mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
+  if(is.null(D)){
+    D <- getDistMat(X)
+  } else {
+    D <- as.matrix(D)
+  }
+  if(is.null(z0)){
+    z0 <- cmdscale(d = D)
+  }
   N <- dim(z0)[1]
   S <- dim(z0)[2]
   a <- length(unique(y))
@@ -70,32 +86,38 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   # obj_prev <- 0
   p_prev <- 1
   
+  pw <- 0
+  Np <- N^pw
+  print(sprintf('pw: %g', pw))
+  
   for(t in 0:nit){
     p_up <- get_p(mat = z_up, trt = y)$p
     
-    if((abs(p_up-p0) > abs(p_prev-p0)) & (abs(p_prev-p0)<=0.01)){
+    if((abs(p_up-p0) > abs(p_prev-p0)) & (abs(p_prev-p0)<=0.05)){
       print(sprintf('Lambda %.2f ...halt iteration', lambda))
       z_up <- z_prev # revert to prev
       break
     }
     
-    if(lambda==0){
-      f_ratio_pred <- f_ratio
-    } else {
-      list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=pseudo_F)$pair # _0, _z
-      ind_f_ratio <- which.min(abs(f_ratio - list_pair[,1]))[1]
-      f_ratio_pred <- list_pair[,2][ind_f_ratio]
-    }
+    # if(lambda==0){
+    #   f_ratio_pred <- f_ratio
+    # } else {
+    list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=pseudo_F)$pair # _0, _z
+    ind_f_ratio <- which.min(abs(f_ratio - list_pair[,1]))[1]
+    f_ratio_pred <- list_pair[,2][ind_f_ratio]
+    # }
       
     z_distmat <- as.matrix(dist(z_up))
     f_diff_nominator <- sum((1 - a * y_indmat * (1+f_ratio_pred*(a-1)/(N-a))) * z_distmat^2)
     delta <- sign(f_diff_nominator)
     obj_conf <- abs(f_diff_nominator)
     obj_mds <- mds_obj(D, z_up)
+    # obj_mds_norm <- mds_obj_norm(D, z_up)
     obj <- lambda*obj_conf + obj_mds
     
     print(paste('epoch', t, 
                 '  lambda', lambda,
+                # '  str-1', sprintf(obj_mds_norm, fmt = '%#.2f'), 
                 '  total', sprintf(obj, fmt = '%#.2f'), 
                 '  mds', sprintf(obj_mds, fmt = '%#.2f'), 
                 '  conf', sprintf(obj_conf, fmt = '%#.2f'),
@@ -105,18 +127,18 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
     log_iter_mat <- rbind(log_iter_mat, 
                           c(t, obj, obj_mds, obj_conf, p_up, p0))
     
-    
+    # update rule
     for(i in 1:N){
       z_distmat <- as.matrix(dist(z_up))  # (N,N)
       coeff <- D/z_distmat  # final term in the update
       coeff[is.nan(coeff)] <- 0
       z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
       
-      z_temp[i,] <- (1+lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)) +
-        (1-lambda*delta*(1+2*f_ratio_pred/(N-2))) * (apply(z_up[y==y[i],], 2, sum)) +
-        apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
+      z_temp[i,] <- (1/N^pw + lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)) +
+        (1/N^pw - lambda*delta*(a-1 + f_ratio_pred*a*(a-1)/(N-a))) * (apply(z_up[y==y[i],], 2, sum)) +
+        1/N^pw * apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
       
-      z_temp[i,] <- z_temp[i,] / (N - N*lambda*delta*f_ratio_pred/(N-2))
+      z_temp[i,] <- z_temp[i,] / (N^(1-pw) - N^(1-pw) * lambda*delta*f_ratio_pred/(N-a))
     } # end z_temp
     
     z_prev <- z_up
@@ -127,9 +149,9 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   
   Fz_up <- pseudo_F(mat = z_up, trt = y)
   F0 <- pseudo_F(d = D, trt = y)
-  write.csv(log_iter_mat, sprintf('result/HyperparameterStudy/iter_200/%s-fmds-%.2f-log.csv', 
+  write.csv(log_iter_mat, sprintf('result/HyperparameterStudy/%s-fmds-%.2f-log.csv', 
                                   dataset, lambda), row.names = FALSE)
-  write.csv(z_up, sprintf('result/HyperparameterStudy/iter_200/%s-fmds-%.2f-Z.csv', 
+  write.csv(z_up, sprintf('result/HyperparameterStudy/%s-fmds-%.2f-Z.csv', 
                           dataset, lambda), row.names=FALSE)
   
   return(list(z = z_up, 

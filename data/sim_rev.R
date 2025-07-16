@@ -48,8 +48,13 @@ template2$EM_fit$fit$mu[] <- params_df2$mu
 template1$EM_fit$fit$sigma[] <- params_df1$sigma
 template2$EM_fit$fit$sigma[] <- params_df2$sigma
 
+# load saved template
+template <- readRDS("result/HyperparameterStudy/sim_rev-template.Rds")
+template1 <- template$"1"
+template2 <- template$"2"
+
 # simulate new dataset
-N <- 200
+N <- 500
 stool1 <- SparseDOSSA2(template = template1, n_sample = N, n_feature = 332, verbose = TRUE, new_features = FALSE)
 stool2 <- SparseDOSSA2(template = template2, n_sample = N, n_feature = 332, verbose = TRUE, new_features = FALSE)
 mat1 <- stool1$simulated_matrices$rel
@@ -57,9 +62,14 @@ mat2 <- stool2$simulated_matrices$rel
 colnames(mat2) <- paste(colnames(mat2), "-2", sep="")
 mat <- cbind(mat1, mat2)
 
+
+# load saved result if necessary
+mat <- readRDS(sprintf("result/ScalingStudy/sim_rev_1-N%d-data.Rds", 2*N))
+group <- read.csv(sprintf("result/ScalingStudy/sim_rev-N%d-Y.csv", 2*N))
+
 # visualize PCoA
 dist <- vegdist(t(mat), method="bray")
-dist <- as.matrix(dist)
+# dist <- as.matrix(dist)
 pcoa <- cmdscale(dist, eig = TRUE)
 graphics.off()
 plot(pcoa$points[,1], pcoa$points[,2], col='white')
@@ -67,7 +77,7 @@ points(pcoa$points[1:N,1], pcoa$points[1:N,2], col='red')
 points(pcoa$points[(N+1):(2*N),1], pcoa$points[(N+1):(2*N),2], col='blue')
 
 # PERMANOVA, original
-group <- factor(rep(c("A", "B"), each = N))
+group <- factor(rep(c(0, 1), each = N))
 result <- adonis2(dist ~ group)
 print(result$`Pr(>F)`[1])
 
@@ -75,3 +85,9 @@ print(result$`Pr(>F)`[1])
 dist2 <- dist(pcoa$points[,1:2], method='euclidean')
 result2 <- adonis2(dist2 ~ group)
 print(result2$`Pr(>F)`[1])
+
+
+# Save results
+saveRDS(mat, sprintf("sim_rev_3-N%d-data.Rds", 2*N))
+write.csv(group, sprintf('sim_rev-N%d-Y.csv', 2*N), row.names=FALSE)
+saveRDS(dist, "sim_rev_1-dist.Rds")
