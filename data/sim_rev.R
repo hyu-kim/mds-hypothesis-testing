@@ -21,10 +21,10 @@ get_template <- function(data_str = "Stool"){
   # select features for perturbation
   params_df <- as.data.frame(params)
   
-  # Four features with high variance and for zero mean difference
+  # Two features with high variance and for zero mean difference
   ind1 <- order(params_df$sigma_adj, decreasing = TRUE)[1:2]
   features1_list <- rownames(params_df)[ind1]
-  # Two features with low variance and for high mean difference
+  # One feature with low variance and for high mean difference
   ind2 <- order(params_df$sigma_adj, decreasing = FALSE)[1]
   features2_list <- rownames(params_df)[ind2]
   
@@ -107,7 +107,7 @@ N <- 500 # set half of total size
 p0 <- 1
 pz <- 1
 
-while (p0>0.05 | pz<0.5) {
+while (p0>0.05 | pz<0.4) {
   print(sprintf('Data of size %d does not outlie. Generating new..', 2*N))
   mat <- get_sim_data_mat(templates, N = N)
   p_list <- get_p_values(N, mat)
