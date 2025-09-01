@@ -142,9 +142,9 @@ y <- rep(c(0, 1, 2), each = N)
 saveRDS(mat, "result/Multiclass/sim4d_rev-data.rds")
 saveRDS(dist, "result/Multiclass/sim4d_rev-dist.rds")
 write.csv(y, 'result/Multiclass/sim4d_dist-Y.csv', row.names=FALSE)
-write.csv(pcoa$points, 'result/Multiclass/sim4d_rev-pcoa-Z.csv', row.names=FALSE)
 
 
 ## run FMDS
+res <- mm_cmds(nit=50, lambda=0, z0=pcoa$points, D=as.matrix(dist), y=y, dataset = 'sim4d_rev')
 res <- mm_cmds(nit=100, lambda=0.5, z0=pcoa$points, D=as.matrix(dist), y=y, dataset = 'sim4d_rev')
 res <- mm_cmds(nit=100, lambda=1, z0=pcoa$points, D=as.matrix(dist), y=y, dataset = 'sim4d_rev')

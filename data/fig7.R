@@ -1,7 +1,7 @@
 library(ggplot2)
 
-sim4d_data <- as.matrix(read.csv('result/Multiclass/sim4d-data.csv'))
-y_sim4d <- as.matrix(read.csv('result/Multiclass/sim4d-Y.csv'))
+dist_mat <- as.matrix(readRDS("result/Multiclass/sim4d_rev-dist.rds"))
+y <- as.matrix(read.csv('result/Multiclass/sim4d_rev-Y.csv'))
 
 method_v <- c('fmds', 'mds')
 params_v <- c(1)/2
@@ -11,16 +11,16 @@ colnames(vis_df) <- c('method', 'hyperparameter', 'y', 'X1', 'X2')
 
 for(m in method_v){
   if(m=='mds'){
-    z_embed <- read.csv('result/Multiclass/sim4d-mds-Z.csv')
+    z_embed <- read.csv('result/Multiclass/sim4d_rev-mds-Z.csv')
     vis_df <- rbind(vis_df, data.frame(method = m, hyperparameter = 0, 
-                                       y = as.factor(y_sim4d), 
+                                       y = as.factor(y), 
                                        X1 = z_embed[,1], X2 = z_embed[,2]))
     next
   }
   for(p in params_v){
-    z_embed <- read.csv(sprintf('result/Multiclass/sim4d-%s-%.2f-Z.csv', m, p))
+    z_embed <- read.csv(sprintf('result/Multiclass/sim4d_rev-%s-%.2f-Z.csv', m, p))
     vis_df <- rbind(vis_df, data.frame(method = m, hyperparameter = p, 
-                                       y = as.factor(y_sim4d), 
+                                       y = as.factor(y), 
                                        X1 = z_embed[,1], X2 = z_embed[,2]))
   }
 }
@@ -30,12 +30,10 @@ for(m in method_v){
 ggplot(data=vis_df, aes(x=X1, y=X2, shape=y, linetype=y)) +
   geom_point(aes(fill=y), size=2, stroke=0.1, alpha=0.7) +
   stat_ellipse(aes(fill=y), geom='polygon', lwd=0.2, level=0.68, alpha=0.25) +
-  facet_wrap(facets = vars(hyperparameter), ncol=5) +
+  facet_wrap(~hyperparameter) +
   scale_fill_manual(values=c('red', 'blue', 'green4')) +
   scale_shape_manual(values=c(21,22,24)) +
   scale_linetype_manual(values=c('longdash','twodash','solid')) +
-  scale_x_continuous(breaks = seq(-6, 6, 3)) +
-  scale_y_continuous(breaks = seq(-6, 6, 3)) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
@@ -52,4 +50,4 @@ ggplot(data=vis_df, aes(x=X1, y=X2, shape=y, linetype=y)) +
         strip.text.x = element_blank()
         )
 
-ggsave('result/fig7.pdf', width=4.8, height=2.5, units='in')
+ggsave('figures/fig7_rev.pdf', width=4.8, height=2.5, units='in')
