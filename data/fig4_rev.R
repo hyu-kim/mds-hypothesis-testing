@@ -56,7 +56,7 @@ for(r in seq(3)){
 
 # save or load Rds
 saveRDS(eval_df, "result/fig4_rev_evaldf.Rds")
-eval_df <- readRDS("result/fig4_rev_eval_df.Rds")
+eval_df <- readRDS("result/fig4_rev_evaldf.Rds")
 
 eval_df_stat <- eval_df %>%
   group_by(method, hyperparameter, k) %>%
