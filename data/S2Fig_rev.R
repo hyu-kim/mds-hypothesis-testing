@@ -1,55 +1,59 @@
 library(ggplot2)
-library('dplyr')
+library(tidyr)
+library(lemon)
 
-iter_df <- data.frame(matrix(nrow=0, ncol=4))
-colnames(iter_df) <- c('dataset', 'size', 'lambda', 'iteration')
+v_lambda = c(0, 1, 2, 4, 10)/10
+v_linestyle = c('dotted', 'dashed', 'solid', 'blank', 'blank')
+v_linesize = c(0.5, 0.4, 0.2, 0.1, 0.1)
+# v_color = c('#f8766d','#7cae00','#00bfc4','black','black')
+
+log_all_df <- data.frame(matrix(nrow=0, ncol=7))
+colnames(log_all_df) <- c('dataset', 'size', 'lambda', 'epoch', 'p_z', 'p_0', 'tile_size')
 
 for(r in c(1:3)){
   for(N in c(50, 100, 200, 500)){
     for(l in c((0:4)/50, (2:20)/20)){
-      if(r==3 & N==50 & l<0.05){next} # did not converge
-      n_iter <- nrow(read.csv(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N%d-fmds-%.2f-log.csv',
-                                      r, r, N, l)))
-      iter_df <- rbind(iter_df, 
-                       data.frame(dataset=sprintf('replicate %g', r), 
-                                  size=N, lambda=l, iteration=n_iter))
+        # if(r==3 & N==50 & l<0.05){next}
+      log_df <- 
+        read.csv(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N%d-fmds-%.2f-log.csv',
+                         r, r, N, l))
+      log_all_df <- rbind(log_all_df, 
+                          data.frame(dataset = sprintf('replicate %g', r), 
+                                     size = N, lambda = l, 
+                                     epoch = log_df$epoch, p_z = log_df$p_z, 
+                                     p_0 = log_df$p_0, 
+                                     tile_size = ifelse(l<0.1, 0.02, 0.05)))
     }
   }
 }
 
-# filter out if n_iter = 51 (max)
-print(iter_df[iter_df$iteration==51,])
-iter_df <- iter_df[iter_df$iteration!=51,]
+# adjust tiles at l = 0.1
+log_all_df$tile_size[log_all_df$lambda==0.1] <- 0.035
+log_all_df$lambda[log_all_df$lambda==0.1] <- 0.107
 
-
-ggplot(data=iter_df) +
-  geom_point(aes(x=lambda, y=iteration-1, fill=as.factor(size)), shape = 21, color = 'black', size=1.5) +
-  # geom_errorbar(aes(x=lambda, ymin=iter_mean-1-iter_std, ymax=iter_mean-1+iter_std),
-  #               width=0.03, color='black', size=0.25) +
-  geom_line(aes(x=lambda, y=iteration-1, color = as.factor(size))) +
-  facet_grid(~dataset) +
-  scale_x_continuous(limits = c(0,1), breaks=(0:5)/5) +
-  scale_y_continuous(trans='log10') +
-  # scale_shape_manual(values= c(21)) +
-  # scale_fill_brewer(palette = "pal10") +
-  scale_fill_manual(values=c('gold','olivedrab', 'blue', 'grey25')) +
-  scale_color_manual(values=c('gold','olivedrab', 'blue', 'grey25')) +
-  labs(x ="Hyperparameter", y = "Number of iterations") +
-  theme(strip.background = element_rect(fill=NA),
-        panel.background = element_rect(fill = "transparent", color = NA),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        plot.background = element_blank(),
-        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
-        legend.title=element_blank(), 
-        legend.text=element_text(size=8),
-        legend.position = "bottom",
+ggplot(data = log_all_df) +
+  geom_tile(aes(x = epoch, y = lambda, fill = p_z, height = tile_size)) +
+  facet_grid(size~dataset) +
+  scale_x_continuous(expand = c(0.003, 0)) +
+  scale_y_continuous(expand = c(0.005, 0)) +
+  scale_fill_gradient(low = "white", high = "black", limits = c(0,1), 
+                      breaks = c(0, 0.5, 1),
+                      guide = guide_colorbar(frame.colour = "black", ticks.colour = "black", linewidth = 0.25)) +
+  theme(panel.background = element_rect(fill = 'white'),
+        panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
+        axis.line = element_line(colour = "black", size = 0.25),
         axis.title.x = element_text(size=8, colour='black'),
         axis.title.y = element_text(size=8, colour='black'),
         axis.text.x = element_text(size=8, colour='black'),
         axis.text.y = element_text(size=8, colour='black'),
-        axis.line = element_blank(),
-        axis.ticks = element_line(linewidth=0.25, colour = 'black')
-  )
+        axis.text.x.top = element_blank(),
+        axis.text.y.right = element_blank(),
+        axis.title.x.top = element_blank(),
+        axis.title.y.right = element_blank(),
+        legend.position="bottom",
+        legend.text=element_text(size=8),
+        legend.title = element_text(size = 8),
+        legend.key.size = unit(0.15, "in")
+        )
 
-ggsave('figures/Fig_S2_rev.pdf', width=6.5, height=4, units='in')
+ggsave('figures/Fig_S2_rev.pdf', width=6, height=7, units='in')

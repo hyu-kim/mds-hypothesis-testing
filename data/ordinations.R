@@ -2,25 +2,27 @@ library(vegan)
 library(tsne)
 library(uwot)
 
-# simulated dataset 1
-simrev1_dist <- as.matrix(vegdist(t(readRDS('result/ScalingStudy/sim_rev_1/sim_rev_1-N200-data.Rds')), method="bray"))
-simrev1_y <- as.matrix(read.csv(sprintf('result/ScalingStudy/sim_rev-N200-Y.csv')))
+# simulated dataset
+r <- 3
+simrev_dist <- as.matrix(vegdist(t(readRDS(sprintf(
+  'result/ScalingStudy/sim_rev_%g/sim_rev_%g-N200-data.Rds', r, r))), method="bray"))
+simrev_y <- as.matrix(read.csv(sprintf('result/ScalingStudy/sim_rev-N200-Y.csv')))
 
 alga_dist <- readRDS('Data/Alga/alga-dist.rds')
 
 
 ### MDS or PCoA
 # simulated
-z0 <- cmdscale(simrev1_dist, k = 2)
-write.csv(z0, 'result/Evaluation/sim_rev_1-PCoA-Z.csv', row.names=FALSE)
+z0 <- cmdscale(simrev_dist, k = 2)
+write.csv(z0, sprintf('result/Evaluation/sim_rev_%g-PCoA-Z.csv', r), row.names=FALSE)
 
 
 
 ### Isomap
 # simulated
 for(k in c(5,10,20,50)){
-  res <- isomap(dist = simrev1_dist, ndim = 2, k = k)$points
-  write.csv(res, sprintf('result/Evaluation/sim_rev_1-iso-%02d-Z.csv',k), row.names=FALSE)
+  res <- isomap(dist = simrev_dist, ndim = 2, k = k)$points
+  write.csv(res, sprintf('result/Evaluation/sim_rev_%g-iso-%02d-Z.csv',r, k), row.names=FALSE)
 }
 
 # algal microbiome
@@ -32,10 +34,10 @@ for(k in c(5,7,10)){
 
 
 ### t-SNE
-# simulated dataset 1
+# simulated dataset
 for(perp in c(5,10,20,50)){
-  res <- tsne(X = simrev1_dist, perplexity = perp)
-  write.csv(res, sprintf('result/Evaluation/sim_rev_1-tsne-%02d-Z.csv', perp), row.names=FALSE)
+  res <- tsne(X = simrev_dist, perplexity = perp)
+  write.csv(res, sprintf('result/Evaluation/sim_rev_%g-tsne-%02d-Z.csv', r, perp), row.names=FALSE)
 }
 
 # algal microbiome
@@ -56,12 +58,12 @@ for(perp in c(5,7,10)){
 
 ## y	: Optional target data for supervised dimension reduction.
 
-# simulated dataset 1
+# simulated dataset
 for(k in c(5,10,20,50)){
-  res <- umap(simrev1_dist, n_neighbors = k, y = factor(simrev1_y))
-  write.csv(res, sprintf('result/Evaluation/sim_rev_1-umap_s-%02d-Z.csv',k), row.names=FALSE)
-  res <- umap(simrev1_dist, n_neighbors = k)
-  write.csv(res, sprintf('result/Evaluation/sim_rev_1-umap_u-%02d-Z.csv',k), row.names=FALSE)
+  res <- umap(simrev_dist, n_neighbors = k, y = factor(simrev_y))
+  write.csv(res, sprintf('result/Evaluation/sim_rev_%g-umap_s-%02d-Z.csv',r,k), row.names=FALSE)
+  res <- umap(simrev_dist, n_neighbors = k)
+  write.csv(res, sprintf('result/Evaluation/sim_rev_%g-umap_u-%02d-Z.csv',r,k), row.names=FALSE)
 }
 
 # algal microbiome

@@ -4,7 +4,7 @@ library(parallel)
 library(vegan)
 
 #### Import
-v_alpha = (0:5)/5
+v_alpha = seq(10)/10
 
 for(rep in 1:3){
   print(sprintf('replicate: %d', rep))

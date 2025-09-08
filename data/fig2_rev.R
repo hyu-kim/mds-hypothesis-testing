@@ -6,7 +6,7 @@ N <- 200 # exemplary data where N ~ d
 log_all_df <- data.frame(matrix(nrow=0, ncol=8))
 colnames(log_all_df) <- c('dataset', 'size', 'lambda', 'epoch', 'obj_mds', 'obj_confr', 'p_z', 'p_0')
 
-for(l in c(0, 0.2, 0.8)){
+for(l in c(0, 0.04, 0.2, 0.8)){
   log_df <- read.csv(sprintf('result/ScalingStudy/sim_rev_1/sim_rev_1-N200-fmds-%.2f-log.csv', l))
   log_all_df <- rbind(log_all_df, 
                       data.frame(dataset = 'sim_rev_1', 
@@ -17,10 +17,14 @@ for(l in c(0, 0.2, 0.8)){
                                  ))
 }
 
+# filter rows for better display
+log_all_df <- log_all_df[log_all_df$epoch<31,]
+log_all_df <- log_all_df[log_all_df$lambda>0.1 | log_all_df$epoch%%2!=1,]
+
 ggplot(log_all_df) + 
-  geom_line(aes(x=epoch, y=obj_mds), size=0.25, linetype='longdash') +
-  geom_line(aes(x=epoch, y=obj_confr*1), inherit.aes = FALSE, size=0.25, linetype='solid') + # iter_50 only
-  facet_wrap(~lambda, scales = "free") +
+  geom_point(aes(x=epoch, y=obj_mds), shape=1, size=1.5) +
+  geom_point(aes(x=epoch, y=obj_confr), shape=2, size=1.5) +
+  facet_wrap(~lambda, nrow = 1, scales = "free") +
   scale_y_continuous(limits = c(0, 600), breaks=seq(0,600,200)) +
   theme(strip.background = element_rect(fill=NA),
         strip.text = element_blank(),
@@ -39,7 +43,7 @@ ggplot(log_all_df) +
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
-ggsave('figures/fig2A_rev.pdf', width=4.8, height=1.75, units='in')
+ggsave('figures/fig2A_rev.pdf', width=4.8, height=1.35, units='in')
 
 
 
@@ -49,7 +53,7 @@ colnames(log_all_df) <- c('dataset', 'size', 'lambda', 'epoch', 'p_z', 'p_0')
 
 for(r in c(1)){
   for(N in c(50,100,200,500)){
-    for(l in c(0.1, 0.2, 0.8)){
+    for(l in c(0.04, 0.2, 0.8)){
       log_df <- read.csv(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N%g-fmds-%.2f-log.csv', r, r, N, l))
       log_all_df <- rbind(log_all_df, 
                           data.frame(dataset = sprintf('sim_rev_%g', r), 
@@ -61,19 +65,21 @@ for(r in c(1)){
   }
 }
 
-log_all_df <- log_all_df[log_all_df$lambda!=0.1 | log_all_df$epoch%%2!=1,]
+# filter rows for better display
+log_all_df <- log_all_df[log_all_df$epoch<32,]
+log_all_df <- log_all_df[log_all_df$lambda!=0.04 | log_all_df$epoch%%2!=1,]
 
 ggplot(log_all_df) + 
   geom_point(aes(x=epoch, y=p_z, shape=as.factor(lambda)), size=1.5) +
   facet_wrap2(~size, scales = "free", nrow = 1) +
-  facetted_pos_scales(
-    x = list(
-      scale_x_continuous(limits = c(0, 30)),
-      scale_x_continuous(limits = c(0, 20)),
-      scale_x_continuous(limits = c(0, 32)),
-      scale_x_continuous(limits = c(0, 42))
-    )
-  ) +
+  # facetted_pos_scales(
+  #   x = list(
+  #     scale_x_continuous(limits = c(0, 30)),
+  #     scale_x_continuous(limits = c(0, 20)),
+  #     scale_x_continuous(limits = c(0, 32)),
+  #     scale_x_continuous(limits = c(0, 42))
+  #   )
+  # ) +
   scale_y_continuous(limits = c(0, 1), breaks=seq(0,1,0.25)) +
   scale_shape_manual(values=c(21,22,24)) +
   theme(strip.background = element_rect(fill=NA),

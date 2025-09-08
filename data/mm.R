@@ -43,10 +43,10 @@ mds_obj <- function(D, z){
 
 
 # MDS objective normalized (stress-1)
-mds_obj_norm <- function(D, z){
-  z_distmat <- get_dist_mat(z)
-  return(sum((D - z_distmat)^2)/sum(z_distmat^2))
-}
+# mds_obj_norm <- function(D, z){
+#   z_distmat <- get_dist_mat(z)
+#   return(sum((D - z_distmat)^2)/sum(z_distmat^2))
+# }
 
 
 # confirmatory objective term with labels
@@ -85,10 +85,6 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   colnames(log_iter_mat) <- c('epoch', 'obj', 'obj_mds', 'obj_confr', 'p_z', 'p_0')
   # obj_prev <- 0
   p_prev <- 1
-  
-  pw <- 0
-  Np <- N^pw
-  print(sprintf('pw: %g', pw))
   
   for(t in 0:nit){
     p_up <- get_p(mat = z_up, trt = y)$p
