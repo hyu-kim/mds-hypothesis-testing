@@ -111,7 +111,7 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
     # obj_mds_norm <- mds_obj_norm(D, z_up)
     obj <- lambda*obj_conf + obj_mds
     
-    print(paste('epoch', t, 
+    message(paste('epoch', t, 
                 '  lambda', lambda,
                 # '  str-1', sprintf(obj_mds_norm, fmt = '%#.2f'), 
                 '  total', sprintf(obj, fmt = '%#.2f'), 
@@ -130,11 +130,11 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
       coeff[is.nan(coeff)] <- 0
       z_diff <- -sweep(x=z_up, MARGIN=2, STATS=as.matrix(z_up[i,]), FUN="-")
       
-      z_temp[i,] <- (1/N^pw + lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)) +
-        (1/N^pw - lambda*delta*(a-1 + f_ratio_pred*a*(a-1)/(N-a))) * (apply(z_up[y==y[i],], 2, sum)) +
-        1/N^pw * apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
+      z_temp[i,] <- (1 + lambda*delta) * (apply(z_up[y!=y[i],], 2, sum)) +
+        (1 - lambda*delta*(a-1 + f_ratio_pred*a*(a-1)/(N-a))) * (apply(z_up[y==y[i],], 2, sum)) +
+        1 * apply(sweep(x=z_diff, MARGIN=1, STATS=coeff[,i], FUN="*"), 2, sum)
       
-      z_temp[i,] <- z_temp[i,] / (N^(1-pw) - N^(1-pw) * lambda*delta*f_ratio_pred/(N-a))
+      z_temp[i,] <- z_temp[i,] / (N - N * lambda*delta*f_ratio_pred/(N-a))
     } # end z_temp
     
     z_prev <- z_up
@@ -145,9 +145,9 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   
   Fz_up <- pseudo_F(mat = z_up, trt = y)
   F0 <- pseudo_F(d = D, trt = y)
-  write.csv(log_iter_mat, sprintf('result/HyperparameterStudy/%s-fmds-%.2f-log.csv', 
+  write.csv(log_iter_mat, sprintf('result/%s-fmds-%.2f-log.csv', 
                                   dataset, lambda), row.names = FALSE)
-  write.csv(z_up, sprintf('result/HyperparameterStudy/%s-fmds-%.2f-Z.csv', 
+  write.csv(z_up, sprintf('result/%s-fmds-%.2f-Z.csv', 
                           dataset, lambda), row.names=FALSE)
   
   return(list(z = z_up, 

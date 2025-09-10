@@ -16,12 +16,12 @@ colnames(eval_df) <- c('N', 'replicate', 'method', 'hyperparameter', 'k', 'conti
 sim_y_mat <- as.matrix(read.csv(sprintf('result/ScalingStudy/sim_rev-N200-Y.csv')))
 
 for(r in seq(3)){
-  message('Replicate: ', r)
   sim_data <- t(readRDS(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N200-data.Rds', r, r)))
   rownames(sim_data) <- c(1:200)
   sim_data_dist <- vegdist(sim_data, method="bray")
   
   for(k in c(14,150)){ # local, global
+  message('Replicate: ', r, ', k: ', k)
     for(m in method_v){
       if(m=='mds'){
         z_embed <- read.csv(sprintf('result/Evaluation/SimRev%g/sim_rev_%g-N200-fmds-0.00-Z.csv',r, r))
