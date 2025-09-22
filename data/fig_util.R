@@ -60,6 +60,6 @@ rp_eval2 <- function(nperm=500, dm, y_orig, z_emb, y_emb = NULL){
     which(F0 == sort(c(F0_perm, F0)))
   return(list(F0 = F0, F0_perm = F0_perm,
               Femb = Femb, Femb_perm = Femb_perm,
-              rho = cor(F0 - F0_perm, Femb - Femb_perm),
+              rho = cor(F0 - F0_perm, Femb - Femb_perm, method = "spearman"),
               q = q))
 }

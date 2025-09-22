@@ -56,7 +56,7 @@ for(r in seq(3)){
 
 # save or load Rds
 saveRDS(eval_df, "result/fig4_rev_evaldf.Rds")
-eval_df <- readRDS("result/fig4_rev_eval_df.Rds")
+eval_df <- readRDS("result/fig4_rev_evaldf.Rds")
 
 eval_df_stat <- eval_df %>%
   group_by(method, hyperparameter, k) %>%
@@ -76,12 +76,12 @@ ggplot(data = eval_df_viz[eval_df_viz$k==14,]) +
   geom_point(aes(x=cont_mu, y=trus_mu, shape=method, color=method, 
                  fill=as.factor(hyperparameter)), size=2.5, stroke=0.5) +
   geom_errorbar(aes(x=cont_mu, ymin=trus_mu-trus_sd, ymax=trus_mu+trus_sd),
-                width=0.005, color='grey25', size=0.25) +
+                width=0.007, color='grey25', size=0.25) +
   geom_errorbarh(aes(xmin=cont_mu-cont_sd, xmax=cont_mu+cont_sd, y=trus_mu),
-                 height=0.005, color='grey25', size=0.25) +
+                 height=0.007, color='grey25', size=0.25) +
   scale_shape_manual(values=c(21,22,4,23,24,25)) + 
   # ('fmds', 'iso', 'mds', 'tsne', 'umap_s', 'umap_u')
-  scale_color_manual(values=c('red','grey20','grey20','grey20','grey20','grey20')) +
+  scale_color_manual(values=c('red','black','black','black','black','black')) +
   scale_fill_manual(values=c('grey99', 'grey50', 'grey99', 'grey40')) +
   scale_x_continuous(breaks=c(0.6,0.7,0.8)) +
   theme(strip.background = element_rect(fill=NA),
@@ -107,12 +107,12 @@ ggplot(data = eval_df_viz[eval_df_viz$k==150,]) +
   geom_point(aes(x=cont_mu, y=trus_mu, shape=method, color=method, 
                  fill=as.factor(hyperparameter)), size=2.5, stroke=0.5) +
   geom_errorbar(aes(x=cont_mu, ymin=trus_mu-trus_sd, ymax=trus_mu+trus_sd),
-                width=0.005, color='grey25', size=0.25) +
+                width=0.007, color='grey25', size=0.25) +
   geom_errorbarh(aes(xmin=cont_mu-cont_sd, xmax=cont_mu+cont_sd, y=trus_mu),
-                 height=0.005, color='grey25', size=0.25) +
+                 height=0.007, color='grey25', size=0.25) +
   scale_shape_manual(values=c(21,22,4,23,24,25)) + 
   # ('fmds', 'iso', 'mds', 'tsne', 'umap_s', 'umap_u')
-  scale_color_manual(values=c('red','grey20','grey20','grey20','grey20','grey20')) +
+  scale_color_manual(values=c('red','black','black','black','black','black')) +
   scale_fill_manual(values=c('transparent', 'grey50', 'transparent', 'grey40')) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
@@ -137,12 +137,12 @@ ggplot(data = eval_df_viz[eval_df_viz$k==150,]) +
   geom_point(aes(x=stre_mu, y=corr_d_mu, shape=method, color=method, 
                  fill=as.factor(hyperparameter)), size=2.5, stroke=0.5) +
   geom_errorbar(aes(x=stre_mu, ymin=corr_d_mu-corr_d_sd, ymax=corr_d_mu+corr_d_sd),
-                width=0.015, color='grey25', size=0.25) +
+                width=0.02, color='grey25', size=0.25) +
   geom_errorbarh(aes(xmin=stre_mu-stre_sd, xmax=stre_mu+stre_sd, y=corr_d_mu),
-                height=0.015, color='grey25', size=0.25) +
+                height=0.02, color='grey25', size=0.25) +
   scale_shape_manual(values=c(21,22,4,23,24,25)) + 
     # ('fmds', 'iso', 'mds', 'tsne', 'umap_s', 'umap_u')
-  scale_color_manual(values=c('red','grey20','grey20','grey20','grey20','grey20')) +
+  scale_color_manual(values=c('red','black','black','black','black','black')) +
   scale_fill_manual(values=c('transparent', 'grey50', 'transparent', 'grey40')) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
@@ -167,12 +167,12 @@ ggplot(data = eval_df_viz[eval_df_viz$k==14,]) + # k doesn't matter
   geom_point(aes(x=corr_f_mu, y=p_rat_mu, shape=method, color=method, 
                  fill=as.factor(hyperparameter)), size=2.5, stroke=0.5) +
   geom_errorbar(aes(x=corr_f_mu, ymin=p_rat_mu-p_rat_sd, ymax=p_rat_mu+p_rat_sd),
-                width=0.01, color='grey25', size=0.25) +
+                width=0.015, color='grey25', size=0.25) +
   geom_errorbarh(aes(xmin=corr_f_mu-corr_f_sd, xmax=corr_f_mu+corr_f_sd, y=p_rat_mu),
-                height=0.025, color='grey25', size=0.25) +
+                height=0.04, color='grey25', size=0.25) +
   scale_shape_manual(values=c(21,22,4,23,24,25)) + 
     # ('fmds', 'iso', 'mds', 'tsne', 'umap_s', 'umap_u')
-  scale_color_manual(values=c('red','grey20','grey20','grey20','grey20','grey20')) +
+  scale_color_manual(values=c('red','black','black','black','black','black')) +
   scale_fill_manual(values=c('transparent', 'grey50', 'transparent', 'grey40')) +
   theme(strip.background = element_rect(fill=NA),
         panel.background = element_rect(fill = "transparent", color = NA),
