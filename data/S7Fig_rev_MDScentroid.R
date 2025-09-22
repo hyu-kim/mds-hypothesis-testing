@@ -12,14 +12,15 @@ th <- theme(strip.background = element_rect(fill=NA),
             plot.background = element_blank(),
             panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
             legend.title=element_blank(), 
-            legend.text=element_text(size=8),
+            legend.text=element_text(size=9),
             legend.position = "right",
-            axis.title.x = element_text(size=8, colour='black'),
-            axis.title.y = element_text(size=8, colour='black'),
-            axis.text.x = element_text(size=8, colour='black'),
-            axis.text.y = element_text(size=8, colour='black'),
+            axis.title.x = element_text(size=9, colour='black'),
+            axis.title.y = element_text(size=9, colour='black'),
+            axis.text.x = element_text(size=9, colour='black'),
+            axis.text.y = element_text(size=9, colour='black'),
             axis.line = element_blank(),
-            axis.ticks = element_line(linewidth=0.25, colour = 'black'))
+            axis.ticks = element_line(linewidth=0.25, colour = 'black'),
+            plot.margin=margin(l=0.5,t=0.5,unit="cm"))
 
 
 params_v <- (0:10)/10
@@ -99,7 +100,7 @@ p1.1 <- ggplot(data=filter(sim_df_stat, N==50)) +
                     ymax=cent_dist_mean+cent_dist_std),
                 width=0.03, color='black', size=0.25) +
   geom_line(aes(x=hyperparameter, y=cent_dist_mean), size=0.25, linetype='solid') +
-  labs(x ="Hyperparameter", y = "Group centroid distance") +
+  labs(x ="Hyperparameter", y = "Intergroup distance") +
   scale_x_continuous(breaks=c(0:5)/5) + 
   # scale_color_manual(values=c('black','black')) +
   th
@@ -139,7 +140,7 @@ p2.1 <- ggplot(data=filter(sim_df_stat, N==100)) +
                     ymax=cent_dist_mean+cent_dist_std),
                 width=0.03, color='black', size=0.25) +
   geom_line(aes(x=hyperparameter, y=cent_dist_mean), size=0.25, linetype='solid') +
-  labs(x ="Hyperparameter", y = "Group centroid distance") +
+  labs(x ="Hyperparameter", y = "Intergroup distance") +
   scale_x_continuous(breaks=c(0:5)/5) + 
   # scale_color_manual(values=c('black','black')) +
   th
@@ -179,7 +180,7 @@ p3.1 <- ggplot(data=filter(sim_df_stat, N==200)) +
                     ymax=cent_dist_mean+cent_dist_std),
                 width=0.03, color='black', size=0.25) +
   geom_line(aes(x=hyperparameter, y=cent_dist_mean), size=0.25, linetype='solid') +
-  labs(x ="Hyperparameter", y = "Group centroid distance") +
+  labs(x ="Hyperparameter", y = "Intergroup distance") +
   scale_x_continuous(breaks=c(0:5)/5) + 
   # scale_color_manual(values=c('black','black')) +
   th
@@ -219,7 +220,7 @@ p4.1 <- ggplot(data=filter(sim_df_stat, N==500)) +
                     ymax=cent_dist_mean+cent_dist_std),
                 width=0.03, color='black', size=0.25) +
   geom_line(aes(x=hyperparameter, y=cent_dist_mean), size=0.25, linetype='solid') +
-  labs(x ="Hyperparameter", y = "Group centroid distance") +
+  labs(x ="Hyperparameter", y = "Intergroup distance") +
   scale_x_continuous(breaks=c(0:5)/5) + 
   # scale_color_manual(values=c('black','black')) +
   th
@@ -259,7 +260,7 @@ p5.1 <- ggplot(data=alg_df_stat) +
                     ymax=cent_dist_mean+cent_dist_std),
                 width=0.03, color='black', size=0.25) +
   geom_line(aes(x=hyperparameter, y=cent_dist_mean), size=0.25, linetype='solid') +
-  labs(x ="Hyperparameter", y = "Group centroid distance") +
+  labs(x ="Hyperparameter", y = "Intergroup distance") +
   scale_x_continuous(breaks=c(0:5)/5) + 
   scale_y_continuous(labels = scientific_format(digits = 2)) +
   th
@@ -298,7 +299,7 @@ plot_grid(p1.1, p1.2, p1.3, p2.1, p2.2, p2.3, p3.1, p3.2, p3.3,
           p4.1, p4.2, p4.3, p5.1, p5.2, p5.3,
           labels='AUTO', ncol=3)
 
-ggsave('figures/Fig_S7_rev.pdf', width=6.5, height=4, units='in')
+ggsave('figures/Fig_S7_rev.pdf', width=6.5, height=8, units='in')
 
 
 
