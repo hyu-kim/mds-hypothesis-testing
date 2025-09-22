@@ -32,8 +32,8 @@ get_template <- function(data_str = "Stool"){
   params_df2 <- params_df1 <- params_df
   params_df1$mu[ind2] <- params_df1$mu[ind2] + 5
   params_df2$mu[ind2] <- params_df2$mu[ind2] - 5
-  params_df1$mu[ind1[2]] <- params_df1$mu[ind1[2]] - 0.2
-  params_df2$mu[ind1[2]] <- params_df2$mu[ind1[2]] + 0.2
+  # params_df1$mu[ind1[2]] <- params_df1$mu[ind1[2]] - 0.2
+  # params_df2$mu[ind1[2]] <- params_df2$mu[ind1[2]] + 0.2
   
   # templates based on params
   template2 <- template1 <- stool$template
