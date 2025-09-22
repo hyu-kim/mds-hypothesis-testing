@@ -56,7 +56,11 @@ get_p <- function(mat=NULL, d=NULL, trt, n_iter=999, fun=pseudo_F){
   f_sorted = sort(f_permuted[,1], decreasing = TRUE)
   f_val = fun(mat=mat, d = d, trt = trt)
   p_val = which(f_val > f_sorted)[1]
-  p_val <- (p_val-1)/(n_iter+1)
+  if (is.na(p_val)){
+    p_val <- 1
+  } else {
+    p_val <- (p_val-1)/(n_iter+1)
+  }
   
   return(list(ratio_all = f_sorted, ratio = f_val, p = p_val))
 }

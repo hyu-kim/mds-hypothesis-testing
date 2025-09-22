@@ -49,7 +49,7 @@ results <- pbmclapply(split(param_combinations, seq_len(nrow(param_combinations)
 # 50 iteration
 for(N in c(50,100,200,500)){
   print(sprintf("Data Size: %d",N))
-  data_mat <- readRDS(sprintf('result/ScalingStudy/sim_rev_1-N%d-data.Rds', N))
+  data_mat <- readRDS(sprintf('result/ScalingStudy/sim_rev_3/sim_rev_3-N%d-data.Rds', N))
   # data_mat <- readRDS(sprintf('result/ScalingStudy/sim_rev_%d-N200-data.Rds',r))
   dist_mat <- as.matrix(vegdist(t(data_mat), method="bray"))
   # y_df <- as.matrix(read.csv('result/ScalingStudy/sim_rev-N200-Y.csv'))
@@ -59,7 +59,7 @@ for(N in c(50,100,200,500)){
   res <- pbmclapply(1:19, function(i){
     x <- c(2:20)[i] * 0.05
     return(mm_cmds(nit = 50, lambda = x, z0 = z0, D = dist_mat, y = y_df,
-                   dataset = paste('sim_rev_1-N',N,sep='')))
+                   dataset = paste('sim_rev_3-N',N,sep='')))
   }, mc.cores = 128)
   write.csv(data.frame(n_iter=50, dataset=paste('sim_rev_1-N',N,sep='')),
             sprintf('result/ScalingStudy/sim_rev_1_%d-config.csv',N), row.names=FALSE)
