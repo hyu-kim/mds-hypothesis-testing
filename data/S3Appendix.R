@@ -49,6 +49,13 @@ for(N in c(50, 100, 200, 500)){
 }
 
 
+# statistical test
+result <- cor.test(argmin_df_eval$N, argmin_df_eval$lambda) # spearman
+print(result)
+print(mean(argmin_df_eval$lambda))
+print(sd(argmin_df_eval$lambda))
+
+
 labels_v <- c("50" = 'N = 50', "100" = 'N = 100', "200" = 'N = 200', "500" = 'N = 500')
 
 p1 <- 
