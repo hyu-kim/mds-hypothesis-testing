@@ -73,8 +73,6 @@ p1 <-
           text = element_text(size = 11)
     )
 
-# ggsave('figures/Fig_SxA_rev.pdf', width=6.5, height=2.5, units='in')
-
 p2 <- 
   ggplot() +
     geom_sina(data = argmin_df_eval, aes(x=as.factor(N), y=lambda, shape=as.factor(rep)), color='black', size=2.5, stroke=0.5, maxwidth = 0.5) +
@@ -98,8 +96,6 @@ p2 <-
           axis.title.x = element_blank(),
           text = element_text(size = 11)
     )
-
-# ggsave('figures/Fig_SxB_rev.pdf', width=6.5, height=1.7, units='in')
 
 plot_grid(p1, p2, labels='AUTO', ncol=1, rel_heights = c(1.5, 1))
 
