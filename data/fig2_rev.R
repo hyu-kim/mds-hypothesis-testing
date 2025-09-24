@@ -110,7 +110,6 @@ colnames(iter_df) <- c('dataset', 'size', 'lambda', 'iteration')
 for(r in c(1:3)){
   for(N in c(50, 100, 200, 500)){
     for(l in c((1:10)/10)){
-      if(r==3 & N==50 & l<0.05){next} # did not converge
       n_iter <- nrow(read.csv(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N%d-fmds-%.2f-log.csv',
                                       r, r, N, l)))
       iter_df <- rbind(iter_df, 
