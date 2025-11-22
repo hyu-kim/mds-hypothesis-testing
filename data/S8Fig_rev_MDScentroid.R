@@ -304,25 +304,49 @@ ggsave('figures/Fig_S7_rev.pdf', width=6.5, height=8, units='in')
 
 
 ## Numbers to insert in main text
-# increase rate of sim data for lambda<0.4 and lambda>=0.4
-sim_diff_early <- sim_diff_late <- rep(0,3)
-for(r in c(1:3)){
-  sim_diff_early[r] <- 
-    sim_df$cent_dist[sim_df$rep==r & sim_df$hyperparameter==0.3] - 
-    sim_df$cent_dist[sim_df$rep==r & sim_df$hyperparameter==0]
-  sim_diff_late[r] <- 
-    sim_df$cent_dist[sim_df$rep==r & sim_df$hyperparameter==1] - 
-    sim_df$cent_dist[sim_df$rep==r & sim_df$hyperparameter==0.4]
+# increase rate of sim data for lambda<=0.2 and lambda>0.2
+# variance decrease by lambda
+N_v <- c(c(50, 100, 200, 500))
+sim_diff_early <- sim_diff_late <- matrix(0, nrow=4, ncol=3)
+sim_var_rate11 <- sim_var_rate12 <- sim_var_rate21 <- sim_var_rate22 <- sim_diff_early
+for(i in seq(4)){
+  sim_df_t <- sim_df[sim_df$N==N_v[i],]
+  for(r in c(1:3)){
+    sim_diff_early[i, r] <- 
+      sim_df_t$cent_dist[sim_df_t$rep==r & sim_df_t$hyperparameter==0.2] - 
+      sim_df_t$cent_dist[sim_df_t$rep==r & sim_df_t$hyperparameter==0]
+    sim_diff_late[i, r] <- 
+      sim_df_t$cent_dist[sim_df_t$rep==r & sim_df_t$hyperparameter==1] - 
+      sim_df_t$cent_dist[sim_df_t$rep==r & sim_df_t$hyperparameter==0.2]
+    sim_var_rate11[i, r] <- 
+      sim_df_t$group1_eig1[sim_df_t$rep==r & sim_df_t$hyperparameter==1] /
+      sim_df_t$group1_eig1[sim_df_t$rep==r & sim_df_t$hyperparameter==0]
+    sim_var_rate12[i, r] <- 
+      sim_df_t$group1_eig2[sim_df_t$rep==r & sim_df_t$hyperparameter==1] /
+      sim_df_t$group1_eig2[sim_df_t$rep==r & sim_df_t$hyperparameter==0]
+    sim_var_rate21[i, r] <- 
+      sim_df_t$group2_eig1[sim_df_t$rep==r & sim_df_t$hyperparameter==1] /
+      sim_df_t$group2_eig1[sim_df_t$rep==r & sim_df_t$hyperparameter==0]
+    sim_var_rate22[i, r] <- 
+      sim_df_t$group2_eig2[sim_df_t$rep==r & sim_df_t$hyperparameter==1] /
+      sim_df_t$group2_eig2[sim_df_t$rep==r & sim_df_t$hyperparameter==0]
+  }
 }
+
 sim_diff_early <- sim_diff_early/0.3
 sim_diff_late <- sim_diff_late/0.6
+sim_var_rate <- rbind(sim_var_rate11, sim_var_rate12, sim_var_rate21, sim_var_rate22)
+print(sim_diff_early / sim_diff_late)
 print(c(mean(sim_diff_early), sd(sim_diff_early), mean(sim_diff_late), sd(sim_diff_late)))
+print(c(1-mean(sim_var_rate), sd(sim_var_rate)))
 
 # spearman correlation of panel D
 cor(sim_df_stat$hyperparameter, sim_df_stat$cent_dist_mean, method="spearman")
 cor.test(sim_df_stat$hyperparameter, sim_df_stat$cent_dist_mean, method="spearman")
 cor(alg_df_stat$hyperparameter, alg_df_stat$cent_dist_mean, method="spearman")
 cor.test(alg_df_stat$hyperparameter, alg_df_stat$cent_dist_mean, method="spearman")
+
+
 
 print(c(
   (alg_df_stat$g1e1_av[1] - alg_df_stat$g1e1_av[11])/alg_df_stat$g1e1_av[1],
