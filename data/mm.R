@@ -11,15 +11,8 @@ get_dist_mat <- function(z){
 
 # local regression on one-on-one paired by p value
 pair_by_rank <- function(D, z, y, fun){
-  f0_sorted <- get_p(d=D, trt=y, fun=fun)$ratio_all
-  fz_sorted <- get_p(mat=z, trt=y, fun=fun)$ratio_all
-  N <- length(f0_sorted)
-  mat_pair <- matrix(0, nrow=N, ncol=2)
-  mat_pair[,1] <- f0_sorted
-  mat_pair[,2] <- fz_sorted
-  df_pair <- data.frame(data=mat_pair)
-  colnames(df_pair) <- c('F0','Fz')
-  return(list(pair=mat_pair))
+  f_sorted <- get_f_pair(z=z, d=D, trt=y)
+  return(f_sorted)
 }
 
 
@@ -56,7 +49,7 @@ conf_obj <- function(y, z, D){
   z_distmat <- get_dist_mat(z)
   y_indmat <- get_ind_mat(y)
   f_ratio <- pseudo_F(d = D, trt = y)
-  list_pair <- pair_by_rank(D=D, z=z, y=y, fun=pseudo_F)$pair # _0, _z
+  list_pair <- pair_by_rank(D=D, z=z, y=y, fun=pseudo_F) # _0, _z
   ind_f_ratio <- which.min(abs(f_ratio - list_pair[,1]))[1]
   f_ratio_pred <- list_pair[,2][ind_f_ratio]
   val <- (1 - a * y_indmat * (1 + f_ratio_pred*(a-1)/(N-a))) * z_distmat^2
@@ -65,7 +58,8 @@ conf_obj <- function(y, z, D){
 }
 
 
-mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
+mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example',
+                    threshold = 0.1, folder = "result/Revision2_Dec2025"){
   if(is.null(D)){
     D <- getDistMat(X)
   } else {
@@ -89,7 +83,7 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   for(t in 0:nit){
     p_up <- get_p(mat = z_up, trt = y)$p
     
-    if((abs(p_up-p0) > abs(p_prev-p0)) & (abs(p_prev-p0)<=0.05)){
+    if((abs(p_up-p0) > abs(p_prev-p0)) & (abs(p_prev-p0)<=threshold)){
       print(sprintf('Lambda %.2f ...halt iteration', lambda))
       z_up <- z_prev # revert to prev
       break
@@ -98,7 +92,7 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
     # if(lambda==0){
     #   f_ratio_pred <- f_ratio
     # } else {
-    list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=pseudo_F)$pair # _0, _z
+    list_pair <- pair_by_rank(D=D, z=z_up, y=y, fun=pseudo_F) # _0, _z
     ind_f_ratio <- which.min(abs(f_ratio - list_pair[,1]))[1]
     f_ratio_pred <- list_pair[,2][ind_f_ratio]
     # }
@@ -145,10 +139,10 @@ mm_cmds <- function(nit = 100, lambda = 0.2, z0, D, y, dataset = 'example'){
   
   Fz_up <- pseudo_F(mat = z_up, trt = y)
   F0 <- pseudo_F(d = D, trt = y)
-  write.csv(log_iter_mat, sprintf('result/%s-fmds-%.2f-log.csv', 
-                                  dataset, lambda), row.names = FALSE)
-  write.csv(z_up, sprintf('result/%s-fmds-%.2f-Z.csv', 
-                          dataset, lambda), row.names=FALSE)
+  write.csv(log_iter_mat, sprintf('%s/%s-fmds-%.2f-log.csv', 
+                                  folder, dataset, lambda), row.names = FALSE)
+  write.csv(z_up, sprintf('%s/%s-fmds-%.2f-Z.csv', 
+                          folder, dataset, lambda), row.names=FALSE)
   
   return(list(z = z_up, 
               # obj_0 = obj_0, obj_f = obj_f, 

@@ -12,38 +12,29 @@ run_mm_cmds <- function(params) {
   N <- params$size
   l <- params$lambda
   
-  data_mat <- readRDS(sprintf('data/sim/sim_rev_%d-N%d-data.Rds', r, N))
+  data_mat <- readRDS(sprintf('result/ScalingStudy/sim_rev2_%d/sim_rev2_%d-N%d-data.Rds', r, r, N))
   dist_mat <- as.matrix(vegdist(t(data_mat), method="bray"))
-  y_df <- as.matrix(read.csv(sprintf('data/sim/sim_rev-N%d-Y.csv', N)))
+  y_df <- as.matrix(read.csv(sprintf('result/ScalingStudy/sim_rev2-N%d-Y.csv', N)))
   
   print(sprintf("Data Read. N: %d, Replicate: %d, For lambda: %g", N, r, l))
   
   z0 <- cmdscale(dist_mat, k = 2)
   res <- mm_cmds(nit = 50, lambda = l, z0 = z0, D = dist_mat, y = y_df,
-                 threshold = 0.05, dataset = sprintf('sim_rev_%d_N%d', r, N),
-                 folder = 'result/080225')
+                 threshold = 0.1, dataset = sprintf('sim_rev2_%d_N%d', r, N),
+                 folder = 'result/Revision2_Dec2025')
   
   print(sprintf("MM Done. N: %d, Replicate: %d, For lambda: %g", N, r, l))
 }
 
 # dataframe of combinations
-replicate_list <- c(3)
-size_list <- c(500)
-lambda_list <- c(0.9)
-# lambda_list_slow <- c((0:4)/50)
+replicate_list <- c(1)
+size_list <- c(500, 500, 500)
+lambda_list <- c(0.04, 0.2, 0.8)
 
-# loop and run mclapply
-# for(lambda_list in list(lambda_list_fast, lambda_list_slow)){
-#   for(r in replicate_list){
-#     for(N in size_list){
 param_combinations <- data.frame(replicate = replicate_list, size = size_list, lambda = lambda_list)
 results <- pbmclapply(split(param_combinations, seq_len(nrow(param_combinations))),
                       run_mm_cmds,
                       mc.cores = detectCores() - 1)
-#     }
-#   }
-# }
-
 
 
 # 50 iteration

@@ -65,5 +65,33 @@ get_p <- function(mat=NULL, d=NULL, trt, n_iter=999, fun=pseudo_F){
   return(list(ratio_all = f_sorted, ratio = f_val, p = p_val))
 }
 
+
+get_f_pair <- function(z, d, trt, n_iter=999){
+  # initialize
+  trt <- as.matrix(trt)
+  f_permuted = matrix(0, nrow=n_iter, ncol=2)
+  # iterate to get pseudo F
+  N <- length(trt)
+  a <- length(unique(trt))
+  tbl <- table(trt)
+  for (iter in 1:n_iter){
+    y_rand <- rep(1,N)
+    pool_v <- 1:N
+    for(cl in 2:a){
+      ind_rand <- sample(pool_v, tbl[cl], replace=F)
+      y_rand[ind_rand] = cl
+      pool_v <- setdiff(pool_v, ind_rand)
+    }
+    f_permuted[iter,1] = pseudo_F(d = d, trt = y_rand) # x
+    f_permuted[iter,2] = pseudo_F(mat = z, trt = y_rand) # z
+  }
+  # compute p value
+  f_sorted = matrix(0, nrow=n_iter, ncol=2)
+  f_sorted[,1] <- sort(f_permuted[,1], decreasing = TRUE)
+  f_sorted[,2] <- sort(f_permuted[,2], decreasing = TRUE)
+  
+  return(f_sorted)
+}
+
 # pseudo_F(ordu1$vectors[,1:2], site1@sam_data@.Data[[1]])
 # pseudo_F(ordu2$vectors[,1:2], site2@sam_data@.Data[[1]])

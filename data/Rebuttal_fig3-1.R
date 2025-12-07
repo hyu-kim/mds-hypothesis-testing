@@ -8,6 +8,7 @@ library(vegan)
 library(scales)
 source("permanova_with_config.R")
 
+
 get_y_rand <- function(y){
   N <- 200
   a <- 2
@@ -69,6 +70,8 @@ permute_each_sort_f <- function(n_iter, x_mat, y){ # independently for x and z
   return(f_sorted_mat_each)
 }
 
+
+## Panel A-C
 x_mat <- readRDS('result/ScalingStudy/sim_rev_1/sim_rev_1-N200-data.Rds')
 y <- read.csv('result/ScalingStudy/sim_rev-N200-Y.csv')$x
 
@@ -87,3 +90,56 @@ points(f_paired_mat[1,1], f_paired_mat[1,2], col = "red", pch = 4)
 f_each_sorted_mat <- permute_each_sort_f(n_iter, x_mat, y)
 plot(f_each_sorted_mat[,1], f_each_sorted_mat[,2])
 points(f_paired_mat[1,1], f_paired_mat[1,2], col = "red", pch = 4)
+
+
+## Panel D -- need edit
+log_all_df <- data.frame(matrix(nrow=0, ncol=6))
+colnames(log_all_df) <- c('dataset', 'size', 'lambda', 'epoch', 'p_z', 'p_0')
+
+for(r in c(1)){
+  for(N in c(50,100,200,500)){
+    for(l in c(0.04, 0.2, 0.8)){
+      log_df <- read.csv(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N%g-fmds-%.2f-log.csv', r, r, N, l))
+      log_all_df <- rbind(log_all_df, 
+                          data.frame(dataset = sprintf('sim_rev_%g', r), 
+                                     size = N, lambda = l, 
+                                     epoch = log_df$epoch, 
+                                     p_z = log_df$p_z, p_0 = log_df$p_0
+                          ))
+    }
+  }
+}
+
+# filter rows for better display
+log_all_df <- log_all_df[log_all_df$epoch<32,]
+log_all_df <- log_all_df[log_all_df$lambda!=0.04 | log_all_df$epoch%%2!=1,]
+
+ggplot(log_all_df) + 
+  geom_point(aes(x=epoch, y=p_z, shape=as.factor(lambda)), size=1.5) +
+  facet_wrap2(~size, scales = "free", nrow = 1) +
+  # facetted_pos_scales(
+  #   x = list(
+  #     scale_x_continuous(limits = c(0, 30)),
+  #     scale_x_continuous(limits = c(0, 20)),
+  #     scale_x_continuous(limits = c(0, 32)),
+  #     scale_x_continuous(limits = c(0, 42))
+  #   )
+  # ) +
+  scale_y_continuous(limits = c(0, 1), breaks=seq(0,1,0.25)) +
+  scale_shape_manual(values=c(21,22,24)) +
+  theme(strip.background = element_rect(fill=NA),
+        strip.text = element_blank(),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
+        legend.position = "Bottom",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(size=8, colour='black'),
+        # axis.text.y = element_text(size=8, colour='black'),
+        axis.text.y = element_blank(),
+        axis.line = element_blank(),
+        axis.ticks = element_line(linewidth=0.25, colour = 'black')
+  )
