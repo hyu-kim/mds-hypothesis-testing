@@ -7,6 +7,10 @@
 library(vegan)
 library(scales)
 source("permanova_with_config.R")
+library(ggplot2)
+library(cowplot)
+library(patchwork)
+library(ggh4x)
 
 
 get_y_rand <- function(y){
@@ -80,17 +84,65 @@ n_iter <- 999
 par(mfrow = c(1, 3))
 
 f_paired_mat <- permute_pair_f(n_iter, x_mat, y)
-plot(f_paired_mat[,1], f_paired_mat[,2], xlab="F_x", ylab="F_z", pch=16, col = alpha("black", 0.5))
-points(f_paired_mat[1,1], f_paired_mat[1,2], col = "red", pch = 4, cex = 2)
-
 f_sorted_mat <- permute_once_sort_f(n_iter, x_mat, y)
-plot(f_sorted_mat[,1], f_sorted_mat[,2])
-points(f_paired_mat[1,1], f_paired_mat[1,2], col = "red", pch = 4)
-
 f_each_sorted_mat <- permute_each_sort_f(n_iter, x_mat, y)
-plot(f_each_sorted_mat[,1], f_each_sorted_mat[,2])
-points(f_paired_mat[1,1], f_paired_mat[1,2], col = "red", pch = 4)
 
+p1 <- ggplot() +
+  geom_point(aes(x=f_sorted_mat[,1], y=f_sorted_mat[,2]), size=1.5, alpha = 0.5) +
+  geom_point(aes(x=f_paired_mat[1,1], y=f_paired_mat[1,2]), col = "red", pch = 4, size = 3) +
+  theme(strip.background = element_rect(fill=NA),
+        strip.text = element_blank(),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
+        legend.position = "Bottom",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(size=8, colour='black'),
+        axis.text.y = element_text(size=8, colour='black'),
+        axis.line = element_blank(),
+        axis.ticks = element_line(linewidth=0.25, colour = 'black')
+  )
+
+p2 <- ggplot() +
+  geom_point(aes(x=f_each_sorted_mat[,1], y=f_each_sorted_mat[,2]), size=1.5, alpha = 0.5) +
+  geom_point(aes(x=f_paired_mat[1,1], y=f_paired_mat[1,2]), col = "red", pch = 4, size = 3) +
+  theme(strip.background = element_rect(fill=NA),
+        strip.text = element_blank(),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
+        legend.position = "Bottom",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(size=8, colour='black'),
+        axis.text.y = element_text(size=8, colour='black'),
+        axis.line = element_blank(),
+        axis.ticks = element_line(linewidth=0.25, colour = 'black')
+  )
+
+p3 <- ggplot() +
+  geom_point(aes(x=f_paired_mat[,1], y=f_paired_mat[,2]), size=1.5, alpha = 0.5) +
+  geom_point(aes(x=f_paired_mat[1,1], y=f_paired_mat[1,2]), col = "red", pch = 4, size = 3) +
+  theme(strip.background = element_rect(fill=NA),
+        strip.text = element_blank(),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_blank(),
+        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
+        legend.position = "Bottom",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(size=8, colour='black'),
+        axis.text.y = element_text(size=8, colour='black'),
+        axis.line = element_blank(),
+        axis.ticks = element_line(linewidth=0.25, colour = 'black')
+  )
 
 ## Panel D -- need edit
 log_all_df <- data.frame(matrix(nrow=0, ncol=6))
@@ -114,7 +166,8 @@ for(r in c(1)){
 log_all_df <- log_all_df[log_all_df$epoch<32,]
 log_all_df <- log_all_df[log_all_df$lambda!=0.04 | log_all_df$epoch%%2!=1,]
 
-ggplot(log_all_df) + 
+p4 <- 
+  ggplot(log_all_df) + 
   geom_point(aes(x=epoch, y=p_z, shape=as.factor(lambda)), size=1.5) +
   facet_wrap2(~size, scales = "free", nrow = 1) +
   # facetted_pos_scales(
@@ -138,8 +191,14 @@ ggplot(log_all_df) +
         axis.title.x = element_blank(),
         axis.title.y = element_blank(),
         axis.text.x = element_text(size=8, colour='black'),
-        # axis.text.y = element_text(size=8, colour='black'),
-        axis.text.y = element_blank(),
+        axis.text.y = element_text(size=8, colour='black'),
+        # axis.text.y = element_blank(),
         axis.line = element_blank(),
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
+
+design <- "
+  123
+  444
+"
+p1 + p2 + p3 + p4 + plot_layout(design = design)
