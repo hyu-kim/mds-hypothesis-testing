@@ -88,9 +88,12 @@ f_sorted_mat <- permute_once_sort_f(n_iter, x_mat, y)
 f_each_sorted_mat <- permute_each_sort_f(n_iter, x_mat, y)
 
 p1 <- ggplot() +
-  geom_point(aes(x=f_sorted_mat[,1], y=f_sorted_mat[,2]), size=1.5, alpha = 0.5) +
-  geom_point(aes(x=f_paired_mat[1,1], y=f_paired_mat[1,2]), col = "red", pch = 4, size = 3) +
+  geom_point(aes(x=f_each_sorted_mat[,1], y=f_each_sorted_mat[,2]), size=1, alpha = 0.35, color = 'red') +
+  geom_point(aes(x=f_sorted_mat[,1], y=f_sorted_mat[,2]), size=0.5, alpha = 0.35, color = 'blue') +
+  geom_point(aes(x=f_paired_mat[1,1], y=f_paired_mat[1,2]), col = "black", pch = 4, size = 3) +
+  labs(x = bquote("Ordered F"[x]^pi), y = bquote("Ordered F"[z]^pi)) +
   theme(strip.background = element_rect(fill=NA),
+        text = element_text(size = 8),
         strip.text = element_blank(),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
@@ -98,8 +101,8 @@ p1 <- ggplot() +
         plot.background = element_blank(),
         panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
         legend.position = "Bottom",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
+        axis.title.x = element_text(size=8, colour='black'),
+        axis.title.y = element_text(size=8, colour='black'),
         axis.text.x = element_text(size=8, colour='black'),
         axis.text.y = element_text(size=8, colour='black'),
         axis.line = element_blank(),
@@ -107,9 +110,11 @@ p1 <- ggplot() +
   )
 
 p2 <- ggplot() +
-  geom_point(aes(x=f_each_sorted_mat[,1], y=f_each_sorted_mat[,2]), size=1.5, alpha = 0.5) +
+  geom_point(aes(x=f_each_sorted_mat[,1], y=f_each_sorted_mat[,2]), size=1, alpha = 0.35) +
   geom_point(aes(x=f_paired_mat[1,1], y=f_paired_mat[1,2]), col = "red", pch = 4, size = 3) +
+  labs(x = bquote("Ordered F"[x]^pi), y = bquote("Ordered F"[z]^pi)) +
   theme(strip.background = element_rect(fill=NA),
+        text = element_text(size = 8),
         strip.text = element_blank(),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
@@ -117,8 +122,8 @@ p2 <- ggplot() +
         plot.background = element_blank(),
         panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
         legend.position = "Bottom",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
+        axis.title.x = element_text(size=8, colour='black'),
+        axis.title.y = element_text(size=8, colour='black'),
         axis.text.x = element_text(size=8, colour='black'),
         axis.text.y = element_text(size=8, colour='black'),
         axis.line = element_blank(),
@@ -126,9 +131,11 @@ p2 <- ggplot() +
   )
 
 p3 <- ggplot() +
-  geom_point(aes(x=f_paired_mat[,1], y=f_paired_mat[,2]), size=1.5, alpha = 0.5) +
+  geom_point(aes(x=f_paired_mat[,1], y=f_paired_mat[,2]), size=1, alpha = 0.35) +
   geom_point(aes(x=f_paired_mat[1,1], y=f_paired_mat[1,2]), col = "red", pch = 4, size = 3) +
+  labs(x = bquote("F"[x]^pi), y = bquote("F"[z]^pi)) +
   theme(strip.background = element_rect(fill=NA),
+        text = element_text(size = 8),
         strip.text = element_blank(),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
@@ -136,8 +143,8 @@ p3 <- ggplot() +
         plot.background = element_blank(),
         panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
         legend.position = "Bottom",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
+        axis.title.x = element_text(size=8, colour='black'),
+        axis.title.y = element_text(size=8, colour='black'),
         axis.text.x = element_text(size=8, colour='black'),
         axis.text.y = element_text(size=8, colour='black'),
         axis.line = element_blank(),
@@ -145,19 +152,23 @@ p3 <- ggplot() +
   )
 
 ## Panel D -- need edit
-log_all_df <- data.frame(matrix(nrow=0, ncol=6))
-colnames(log_all_df) <- c('dataset', 'size', 'lambda', 'epoch', 'p_z', 'p_0')
+log_all_df <- data.frame(matrix(nrow=0, ncol=7))
+colnames(log_all_df) <- c('dataset', 'size', 'lambda', 'epoch', 'p_z', 'p_0', 'method')
 
 for(r in c(1)){
   for(N in c(50,100,200,500)){
     for(l in c(0.04, 0.2, 0.8)){
-      log_df <- read.csv(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N%g-fmds-%.2f-log.csv', r, r, N, l))
-      log_all_df <- rbind(log_all_df, 
-                          data.frame(dataset = sprintf('sim_rev_%g', r), 
-                                     size = N, lambda = l, 
-                                     epoch = log_df$epoch, 
-                                     p_z = log_df$p_z, p_0 = log_df$p_0
-                          ))
+      log_df1 <- read.csv(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N%g-fmds-%.2f-log.csv', r, r, N, l))
+      log_df1_app <- data.frame(dataset = sprintf('sim_rev_%g', r), 
+                                size = N, lambda = l, epoch = log_df1$epoch, 
+                                p_z = log_df1$p_z, p_0 = log_df1$p_0,
+                                method = 'before')
+      log_df2 <- read.csv(sprintf('result/Revision2_Dec2025/sim_rev2_%g_N%g-fmds-%.2f-log.csv', r, N, l))
+      log_df2_app <- data.frame(dataset = sprintf('sim_rev_%g', r), 
+                                size = N, lambda = l, epoch = log_df2$epoch, 
+                                p_z = log_df2$p_z, p_0 = log_df2$p_0,
+                                method = 'after')
+      log_all_df <- rbind(log_all_df, log_df1_app, log_df2_app)
     }
   }
 }
@@ -168,37 +179,32 @@ log_all_df <- log_all_df[log_all_df$lambda!=0.04 | log_all_df$epoch%%2!=1,]
 
 p4 <- 
   ggplot(log_all_df) + 
-  geom_point(aes(x=epoch, y=p_z, shape=as.factor(lambda)), size=1.5) +
+  geom_point(aes(x=epoch, y=p_z, shape=as.factor(lambda), color=as.factor(method)), size=1) +
   facet_wrap2(~size, scales = "free", nrow = 1) +
-  # facetted_pos_scales(
-  #   x = list(
-  #     scale_x_continuous(limits = c(0, 30)),
-  #     scale_x_continuous(limits = c(0, 20)),
-  #     scale_x_continuous(limits = c(0, 32)),
-  #     scale_x_continuous(limits = c(0, 42))
-  #   )
-  # ) +
   scale_y_continuous(limits = c(0, 1), breaks=seq(0,1,0.25)) +
-  scale_shape_manual(values=c(21,22,24)) +
+  scale_shape_manual(values=c(21,22,24), name = bquote(lambda)) +
+  scale_color_manual(values = c("blue", "red"), name = "Changes in permutation") +
+  labs(x = "Epoch", y = bquote("p"[z])) +
   theme(strip.background = element_rect(fill=NA),
-        strip.text = element_blank(),
+        text = element_text(size = 8),
         panel.background = element_rect(fill = "transparent", color = NA),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         plot.background = element_blank(),
         panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
-        legend.position = "Bottom",
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank(),
+        legend.position = "bottom",
+        axis.title.x = element_text(size=8, colour='black'),
+        axis.title.y = element_text(size=8, colour='black'),
         axis.text.x = element_text(size=8, colour='black'),
         axis.text.y = element_text(size=8, colour='black'),
-        # axis.text.y = element_blank(),
         axis.line = element_blank(),
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
 design <- "
-  123
-  444
+  12
+  33
 "
-p1 + p2 + p3 + p4 + plot_layout(design = design)
+p1 + p3 + p4 + plot_layout(design = design) + plot_annotation(tag_levels = "A")
+
+ggsave('figures/Rebuttal_Fig3-1.png', width=6, height=4.5, units='in')
