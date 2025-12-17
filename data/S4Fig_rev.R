@@ -3,6 +3,7 @@ library(vegan)
 library(ggplot2)
 library(ggforce)
 library(cowplot)
+library(scales)
 source('fig_util.R')
 
 # Load data
@@ -29,7 +30,9 @@ for(N in c(50, 100, 200, 500)){
   }
 }
 
-df_eval$'f_obj' <- log(df_eval$n_epoch) * (1-df_eval$pearson_corr)
+# compute loss function after min-max scaling each factor
+df_eval$'f_obj' <- rescale(df_eval$n_epoch, to=c(0,1)) + rescale(df_eval$pearson_corr, to=c(1,0))
+# add cut-off based on step size
 
 saveRDS(df_eval, "result/S3Appendix_dfeval.Rds")
 df_eval <- readRDS("result/S3Appendix_dfeval.Rds")
