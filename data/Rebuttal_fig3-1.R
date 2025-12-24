@@ -207,4 +207,4 @@ design <- "
 "
 p1 + p3 + p4 + plot_layout(design = design) + plot_annotation(tag_levels = "A")
 
-ggsave('figures/Rebuttal_Fig3-1.png', width=6, height=4.5, units='in')
+ggsave('figures/Rebuttal_Fig3-1.png', width=6, height=3.85, units='in')

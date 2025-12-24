@@ -31,7 +31,7 @@ for(N in c(50, 100, 200, 500)){
 }
 
 # compute loss function after min-max scaling each factor
-df_eval$'f_obj' <- rescale(df_eval$n_epoch, to=c(0,1)) + rescale(df_eval$pearson_corr, to=c(1,0))
+df_eval$'f_obj' <- rescale(log10(df_eval$n_epoch), to=c(0,1)) + rescale(df_eval$pearson_corr, to=c(1,0))
 # add cut-off based on step size
 
 saveRDS(df_eval, "result/S3Appendix_dfeval.Rds")
@@ -109,4 +109,4 @@ p2 <-
 
 plot_grid(p1, p2, labels='AUTO', ncol=1, rel_heights = c(1.5, 1))
 
-ggsave('figures/Fig_S4_rev_gridsearch.pdf', width=6.5, height=4, units='in')
+ggsave('figures/Fig_S4_rev2.pdf', width=6.5, height=4, units='in')

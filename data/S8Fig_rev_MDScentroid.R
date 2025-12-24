@@ -299,7 +299,7 @@ plot_grid(p1.1, p1.2, p1.3, p2.1, p2.2, p2.3, p3.1, p3.2, p3.3,
           p4.1, p4.2, p4.3, p5.1, p5.2, p5.3,
           labels='AUTO', ncol=3)
 
-ggsave('figures/Fig_S7_rev.pdf', width=6.5, height=8, units='in')
+ggsave('figures/Fig_S8_rev.pdf', width=6.5, height=8, units='in')
 
 
 
@@ -346,6 +346,19 @@ cor.test(sim_df_stat$hyperparameter, sim_df_stat$cent_dist_mean, method="spearma
 cor(alg_df_stat$hyperparameter, alg_df_stat$cent_dist_mean, method="spearman")
 cor.test(alg_df_stat$hyperparameter, alg_df_stat$cent_dist_mean, method="spearman")
 
+# correlation by group
+library(dplyr)
+
+fit <- lm(cent_dist ~ hyperparameter * N, data = sim_df[sim_df$hyperparameter>=0.2,])
+summary(fit)
+
+sim_df[sim_df$hyperparameter>=0.2,] %>%
+  # group_by(N) %>%          # condition = factor/ID column
+  summarise(
+    R_sq = cor(hyperparameter, cent_dist, use = "complete.obs")^2,  # x = predictor, y = response
+    n = n(),
+    p_val = cor.test(hyperparameter, cent_dist, use = "complete.obs")$p.value
+  )
 
 
 print(c(

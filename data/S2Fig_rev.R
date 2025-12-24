@@ -1,7 +1,50 @@
 library(ggplot2)
 library(tidyr)
 library(lemon)
+library(cowplot)
+library(patchwork)
 
+## A. without stopping rule
+log_all_df <- data.frame(matrix(nrow=0, ncol=6))
+colnames(log_all_df) <- c('dataset', 'size', 'lambda', 'epoch', 'p_z', 'p_0')
+
+for(r in c(1)){
+  for(N in c(100)){
+    for(l in c(0.2, 0.5, 0.8)){
+      log_df <- read.csv(sprintf('result/Revision2_Dec2025/sim_rev_%g-N%g-fmds-%.2f-log.csv', r, N, l))
+      log_all_df <- rbind(log_all_df, 
+                          data.frame(dataset = sprintf('sim_rev_%g', r), 
+                                     size = N, lambda = sprintf('lambda = %g', l), 
+                                     epoch = log_df$epoch, 
+                                     p_z = log_df$p_z, p_0 = log_df$p_0
+                          ))
+    }
+  }
+}
+
+p1 <- ggplot(log_all_df) + 
+  geom_point(aes(x=epoch, y=p_z), size = 0.5) +
+  geom_line(aes(x=epoch, y=p_z), linewidth = 0.15) +
+  facet_wrap2(~lambda, scales = "free", nrow = 1) +
+  labs(x = "Epoch", y = bquote(p[z])) +
+  scale_y_continuous(limits = c(0, 1), breaks=seq(0,1,0.25)) +
+  theme(strip.background = element_rect(fill=NA),
+        # strip.text = element_blank(),
+        text = element_text(size = 8),
+        panel.background = element_rect(fill = "transparent", color = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # plot.background = element_blank(),
+        panel.border = element_rect(fill = "transparent", color = 'black', size=0.5),
+        legend.position = "Bottom",
+        axis.text.x = element_text(size=8, colour='black'),
+        axis.text.y = element_text(size=8, colour='black'),
+        axis.line = element_blank(),
+        axis.ticks = element_line(linewidth=0.25, colour = 'black')
+  )
+
+
+## B. with stopping rule
 v_lambda = c(0, 1, 2, 4, 10)/10
 v_linestyle = c('dotted', 'dashed', 'solid', 'blank', 'blank')
 v_linesize = c(0.5, 0.4, 0.2, 0.1, 0.1)
@@ -19,7 +62,7 @@ for(r in c(1:3)){
                          r, r, N, l))
       log_all_df <- rbind(log_all_df, 
                           data.frame(dataset = sprintf('replicate %g', r), 
-                                     size = N, lambda = l, 
+                                     size = sprintf("N = %g", N), lambda = l, 
                                      epoch = log_df$epoch, p_z = log_df$p_z, 
                                      p_0 = log_df$p_0, 
                                      tile_size = ifelse(l<0.1, 0.02, 0.05)))
@@ -31,15 +74,17 @@ for(r in c(1:3)){
 log_all_df$tile_size[log_all_df$lambda==0.1] <- 0.035
 log_all_df$lambda[log_all_df$lambda==0.1] <- 0.107
 
-ggplot(data = log_all_df) +
+p2 <- ggplot(data = log_all_df) +
   geom_tile(aes(x = epoch, y = lambda, fill = p_z, height = tile_size)) +
-  facet_grid(size~dataset) +
+  facet_grid(dataset~size) +
   scale_x_continuous(expand = c(0.003, 0)) +
   scale_y_continuous(expand = c(0.005, 0)) +
+  labs(x = "Epoch", y = bquote(lambda)) +
   scale_fill_gradient(low = "white", high = "black", limits = c(0,1), 
-                      breaks = c(0, 0.5, 1),
+                      breaks = c(0, 0.5, 1), name = bquote(p[z]),
                       guide = guide_colorbar(frame.colour = "black", ticks.colour = "black", linewidth = 0.25)) +
-  theme(panel.background = element_rect(fill = 'white'),
+  theme(text = element_text(size = 8),
+        panel.background = element_rect(fill = 'white'),
         panel.border = element_rect(colour = "black", fill = NA, size = 0.5),
         axis.line = element_line(colour = "black", size = 0.25),
         axis.title.x = element_text(size=8, colour='black'),
@@ -56,4 +101,12 @@ ggplot(data = log_all_df) +
         legend.key.size = unit(0.15, "in")
         )
 
-ggsave('figures/Fig_S2_rev.pdf', width=6, height=7, units='in')
+design <- "
+  1
+  2
+  2
+  2
+"
+p1 + p2 + plot_layout(design = design) + plot_annotation(tag_levels = "A")
+
+ggsave('figures/Fig_S2_rev2.pdf', width=6, height=7, units='in')
