@@ -32,8 +32,7 @@ first_convergence <- log_all_df %>%
   slice(1) %>%  # Take the first occurrence
   ungroup()
 
-p1 <- 
-  ggplot(log_all_df) + 
+ggplot(log_all_df) + 
   geom_point(aes(x=epoch, y=p_z), size = 0.5) +
   geom_line(aes(x=epoch, y=p_z), linewidth = 0.15) +
   geom_hline(aes(yintercept = p_0 - 0.05), linetype = "dashed", color = "red", linewidth = 0.3) +
@@ -60,6 +59,8 @@ p1 <-
         axis.ticks = element_line(linewidth=0.25, colour = 'black')
   )
 
+ggsave('figures/Rebuttal2_Fig3-2a.png', width=6, height=2.5, units='in')
+
 
 ## B. with stopping rule
 v_lambda = c(0, 1, 2, 4, 10)/10
@@ -73,7 +74,7 @@ colnames(log_all_df) <- c('dataset', 'size', 'lambda', 'epoch', 'p_z', 'p_0', 't
 for(r in c(1:3)){
   for(N in c(50, 100, 200, 500)){
     for(l in c((0:4)/50, (2:20)/20)){
-        # if(r==3 & N==50 & l<0.05){next}
+      # if(r==3 & N==50 & l<0.05){next}
       log_df <- 
         read.csv(sprintf('result/ScalingStudy/sim_rev_%g/sim_rev_%g-N%d-fmds-%.2f-log.csv',
                          r, r, N, l))
@@ -91,7 +92,7 @@ for(r in c(1:3)){
 log_all_df$tile_size[log_all_df$lambda==0.1] <- 0.035
 log_all_df$lambda[log_all_df$lambda==0.1] <- 0.107
 
-p2 <- ggplot(data = log_all_df) +
+ggplot(data = log_all_df) +
   geom_tile(aes(x = epoch, y = lambda, fill = p_z, height = tile_size)) +
   facet_grid(dataset~size) +
   scale_x_continuous(expand = c(0.003, 0)) +
@@ -112,21 +113,10 @@ p2 <- ggplot(data = log_all_df) +
         axis.text.y.right = element_blank(),
         axis.title.x.top = element_blank(),
         axis.title.y.right = element_blank(),
-        legend.position="bottom",
+        legend.position="right",
         legend.text=element_text(size=8),
         legend.title = element_text(size = 8),
         legend.key.size = unit(0.15, "in")
-        )
+  )
 
-design <- "
-  1
-  1
-  2
-  2
-  2
-  2
-  2
-"
-p1 + p2 + plot_layout(design = design) + plot_annotation(tag_levels = "A")
-
-ggsave('figures/Fig_S2_rev3.pdf', width=6, height=7, units='in')
+ggsave('figures/Rebuttal2_Fig3-2b.png', width=6, height=4, units='in')
